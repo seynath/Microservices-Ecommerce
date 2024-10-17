@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package category;
+
+message Category {
+  string _id = 1;
+  string name = 2;
+  string description = 3;
+  string image = 4;
+}
+
+message GetCategoryRequest {
+  string categoryId = 1;
+}
+
+message GetCategoryResponse {
+  Category category = 1;
+}
+
+message GetSubCategoryRequest {
+  string categoryId = 1;
+  string subCategoryId = 2;
+}
+
+message GetSubCategoryResponse {
+  Category subCategory = 1;
+}
+
+service CategoryService {
+  rpc GetCategory(GetCategoryRequest) returns (GetCategoryResponse);
+  rpc GetSubCategory(GetSubCategoryRequest) returns (GetSubCategoryResponse);
+}
