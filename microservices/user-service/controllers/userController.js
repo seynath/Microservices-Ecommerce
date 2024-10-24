@@ -4,12 +4,12 @@ const { createUser, findUserByEmail } = require('../models/User');
 
 // Function to generate access tokens
 const generateAccessToken = (user) => {
-  return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '7s' }); // Short-lived token
+  return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '15m' }); // Short-lived token
 };
 
 // Function to generate refresh tokens
 const generateRefreshToken = (user) => {
-  return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '14s' }); // Long-lived token
+  return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' }); // Long-lived token
 };
 
 // Register a new user
@@ -91,14 +91,12 @@ const loginUser = async (req, res) => {
 const refreshToken = (req, res) => {
 
   const refreshToken = req.cookies.token;
-  console.log(refreshToken)
   if (!refreshToken) return res.sendStatus(401);
 
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err) return res.sendStatus(403);
 
     
-    console.log(user)
     const newAccessToken = generateAccessToken({ id: user.id, email: user.email });
     res.json({ accessToken: newAccessToken });
   });

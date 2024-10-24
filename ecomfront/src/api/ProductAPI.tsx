@@ -1,4 +1,4 @@
-const product_service_url = "http://localhost:6003/product"
+export const product_service_url = "http://localhost:6003/product"
 import axios from "axios";
 
 
@@ -57,6 +57,19 @@ export const getProductById = async(id: string): Promise<object> => {
     return response.data;
   } catch (error) {
     console.error("Error fetching product:", error);
+    throw error;
+  }
+}
+
+export const deleteProduct = async(id: string): Promise<object> => {
+  try {
+    console.log("Deleting product:", id);
+    const response = await axios.delete(`${product_service_url}/${id}`);
+
+    console.log(`Product with id ${id} successfully deleted`);
+    return response;
+  } catch (error) {
+    console.error("Error deleting product:", error);
     throw error;
   }
 }

@@ -12,6 +12,6 @@ router.post('/login', loginUser);
 // router.get('/',getUser)
 
 router.post('/token', refreshToken)
-router.get('/abc', authenticateToken, getUser);
+router.get('/', authenticateToken, getUser);
 
 module.exports = router;

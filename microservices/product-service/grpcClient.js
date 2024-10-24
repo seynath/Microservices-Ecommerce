@@ -20,28 +20,27 @@ const client = new categoryProto.CategoryService(
   grpc.credentials.createInsecure()
 );
 
-// gRPC method to get category by ID
-const getCategoryById = (categoryId) => {
+
+// Fetch all categories via gRPC
+const getAllCategories = async () => {
   return new Promise((resolve, reject) => {
-    client.GetCategory({ categoryId }, (error, response) => {
+    grpcClient.getAllCategories({}, (error, response) => {
       if (error) {
         return reject(error);
       }
-      resolve(response.category);
+      resolve(response.categories); // Assuming response contains an array of categories
     });
   });
 };
 
-// gRPC method to get sub-category by ID
-const getSubCategoryById = (categoryId, subCategoryId) => {
+const getAllSubCategories = async () => {
   return new Promise((resolve, reject) => {
-    client.GetSubCategory({ categoryId, subCategoryId }, (error, response) => {
+    grpcClient.getAllSubCategories({}, (error, response) => {
       if (error) {
         return reject(error);
       }
-      resolve(response.subCategory);
+      resolve(response.subCategories); // Assuming response contains an array of subcategories
     });
   });
 };
-
-module.exports = { getCategoryById, getSubCategoryById };
+module.exports = { getAllCategories, getAllSubCategories };

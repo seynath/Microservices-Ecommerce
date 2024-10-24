@@ -80,32 +80,27 @@ export const getUser = createAsyncThunk('auth/getUser', async (_, { dispatch, re
       return rejectWithValue('Access token could not be refreshed');
     }
   }
-  
-  console.log("aaaaawayakow")
-  console.log(accessToken)
+
   try {
-    const response = await axios.get(`${user_service_url}/abc`, {
+    const response = await axios.get(`${user_service_url}/`, {
       headers: { Authorization: `Bearer ${accessToken}` },
       withCredentials: true,
     });
-    console.log(response)
     return response.data;
   } catch (error: any) {
     // If the error is related to token expiration, attempt to refresh it
     console.log(error)
     if (error.response && error.response.status === 403) {
       const refreshResult = await dispatch(refreshAccessToken());
-      console.log({"Refreshing access token...": refreshResult});
       if (refreshResult.payload && refreshResult.meta.requestStatus === 'fulfilled') {
         accessToken = refreshResult.payload;
 
         // Retry the original request with the new access token
 
-        const retryResponse = await axios.get(`${user_service_url}/abc`, {
+        const retryResponse = await axios.get(`${user_service_url}/`, {
           headers: { Authorization: `Bearer ${accessToken}` },
           withCredentials: true,
         });
-        console.log({"aaaye genaaawa hureee": retryResponse})
         return retryResponse.data;
       }
     }

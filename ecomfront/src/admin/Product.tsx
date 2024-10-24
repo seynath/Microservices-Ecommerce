@@ -7,9 +7,11 @@ import { createProduct } from "@/api/ProductAPI";
 import ProductTable from "./components/ProductTable";
 import { Button, Modal } from "flowbite-react";
 import { getProducts } from "@/api/ProductAPI";
-import { getProductById, updateProduct } from "@/api/ProductAPI";
+import { getProductById, updateProduct,deleteProduct } from "@/api/ProductAPI";
 import UploadWidget from "./components/UploadWidget";
 import UpdateUploadWidget from "./components/UpdateUploadWidget";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
+
 
 // Define types for the images and variants
 interface ImageType {
@@ -31,6 +33,7 @@ const Product: React.FC = () => {
   const [editProduct, setEditProduct] = useState(false);
   const[editProductId, setEditProductId] = useState("");
   const [products, setProducts] = useState<any[]>([]);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const[loadEditProduct, setLoadEditProduct] = useState(
     {
       title: "",
@@ -43,7 +46,6 @@ const Product: React.FC = () => {
       stockQuantity: 0,
     }
   );
-
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   // const [keywords, setKeywords] = useState<string>("");
@@ -57,6 +59,7 @@ const Product: React.FC = () => {
   const [subcategory, setSubcategory] = useState<string>("");
   const [basePrice, setBasePrice] = useState<number>(0);
   const [variants, setVariants] = useState<VariantType[]>([]);
+  const [deleteProductId, setDeleteProductId] = useState<string>("");
   const [variant, setVariant] = useState<VariantType>({
     size: "",
     color: "",
@@ -76,6 +79,24 @@ const Product: React.FC = () => {
   };
 
 
+  const deleteProductDo = async () => {
+    setOpenDeleteModal(false);
+    try {
+      const response = await deleteProduct(deleteProductId);
+      if (response.status === 200) {
+        fetchProducts();
+        console.log("Product deleted successfully");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
+  }
+
+  const handleDeleteProduct = async (productId) =>{
+    setDeleteProductId(productId);
+    setOpenDeleteModal(true);
+
+  }
 
   // Handle product edit: Load product details, including images (URLs)
   const handleEditProduct = async (id: string) => {
@@ -113,6 +134,7 @@ const Product: React.FC = () => {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(variants)
     const product = {
       name: title,
       description,
@@ -149,8 +171,6 @@ const Product: React.FC = () => {
   // };
 
   // Fetch categories and subcategories
-
-  useEffect(() => {
     const fetchProducts = async () => {
       try {
         const allProducts = await getProducts();
@@ -171,6 +191,8 @@ const Product: React.FC = () => {
         console.error("Error fetching products:", error);
       }
     };
+  useEffect(() => {
+
 
     fetchProducts();
   }, []);
@@ -487,7 +509,29 @@ const Product: React.FC = () => {
           setEditProduct={setEditProduct}
           editProduct={editProduct}
           handleEditProduct={handleEditProduct}
+          handleDeleteProduct={handleDeleteProduct}
         />
+      </div>
+      <div>
+      <Modal show={openDeleteModal} size="md" onClose={() => setOpenDeleteModal(false)} popup>
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+              Are you sure you want to delete this product?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <Button color="gray" onClick={() => { setOpenDeleteModal(false);  }}>
+                No, cancel
+              </Button>
+              <Button color="failure" onClick={() =>{ setOpenDeleteModal(false); deleteProductDo();}}>
+                {"Yes, I'm sure"}
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
       </div>
     </div>
   );

@@ -1,258 +1,177 @@
+import { getCart, removeFromCart, updateCartItem } from "@/features/cartSlice";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 const Cart = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getCart());
+
+    // setInterval(() => dispatch(getCart()), 4000);
+  }, []);
+
+  const cart = useSelector((state) => state?.cart?.cart) || { items: [] }; // Defaulting to empty items array
+
+  const handleRemoveItemFromCart = (productId, variantId) => {
+    console.log("Removing item from cart", productId, variantId);
+    dispatch(removeFromCart({ productId:productId, variantId: variantId }));
+  };
+
+  // const handleUpdateItemFromCart = (productId, variantId, quantity, price) => {
+  //   console.log(
+  //     "Updating item in cart",
+  //     productId,
+  //     variantId,
+  //     quantity,
+  //     price
+  //   );
+  //   // dispatch(
+  //   //   updateCartItem({
+  //   //     productId: productId,
+  //   //     variantId: variantId,
+  //   //     quantity,
+  //   //     price,
+  //   //   })
+  //   // );
+  // };
+  const handleUpdateItemFromCart = (productId, variantId, quantity, price) => {
+    console.log(
+      "Updating item in cart",
+      productId,
+      variantId,
+      quantity,
+      price
+    )
+    dispatch(updateCartItem({ productId, variantId, quantity: Number(quantity), price }));
+  };
+
   return (
-    <div>
-      {/*
-  Heads up! 👋
+    <div className="bg-white py-6 sm:py-8 lg:py-12">
+      <div className="mx-auto max-w-screen-lg px-4 md:px-8">
+        <div className="mb-6 sm:mb-10 lg:mb-16">
+          <h2 className="mb-4 text-center text-2xl font-bold text-gray-800 md:mb-6 lg:text-3xl">
+            Your Cart
+          </h2>
+        </div>
 
-  Plugins:
-    - @tailwindcss/forms
-*/}
-
-<section>
-  <div className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-    <div className="mx-auto max-w-3xl">
-      <header className="text-center">
-        <h1 className="text-xl font-bold text-gray-900 sm:text-3xl">Your Cart</h1>
-      </header>
-
-      <div className="mt-8">
-        <ul className="space-y-4">
-          <li className="flex items-center gap-4">
-            <img
-              src="https://images.unsplash.com/photo-1618354691373-d851c5c3a990?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=830&q=80"
-              alt=""
-              className="size-16 rounded object-cover"
-            />
-
-            <div>
-              <h3 className="text-sm text-gray-900">Basic Tee 6-Pack</h3>
-
-              <dl className="mt-0.5 space-y-px text-[10px] text-gray-600">
-                <div>
-                  <dt className="inline">Size:</dt>
-                  <dd className="inline">XXS</dd>
-                </div>
-
-                <div>
-                  <dt className="inline">Color:</dt>
-                  <dd className="inline">White</dd>
-                </div>
-              </dl>
-            </div>
-
-            <div className="flex flex-1 items-center justify-end gap-2">
-              <form>
-                <label htmlFor="Line1Qty" className="sr-only"> Quantity </label>
-
-                <input
-                  type="number"
-                  min="1"
-                  value="1"
-                  id="Line1Qty"
-                  className="h-8 w-12 rounded border-gray-200 bg-gray-50 p-0 text-center text-xs text-gray-600 [-moz-appearance:_textfield] focus:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
-                />
-              </form>
-
-              <button className="text-gray-600 transition hover:text-red-600">
-                <span className="sr-only">Remove item</span>
-
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="size-4"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+        <div className="mb-6 flex flex-col gap-4 sm:mb-8 md:gap-6">
+          {/* Product list */}
+          {cart && cart.items && cart.items.length > 0 ? (
+            cart.items.map((item) => (
+              <div key={`${item.productId}-${item.variantId}`} className="flex flex-wrap gap-x-4 overflow-hidden rounded-lg border sm:gap-y-4 lg:gap-6">
+                <a href="#" className="group relative block h-48 w-32 overflow-hidden bg-gray-100 sm:h-56 sm:w-40">
+                  <img
+                    src={item.image}
+                    loading="lazy"
+                    alt="Product"
+                    className="h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
                   />
-                </svg>
-              </button>
-            </div>
-          </li>
+                </a>
 
-          <li className="flex items-center gap-4">
-            <img
-              src="https://images.unsplash.com/photo-1618354691373-d851c5c3a990?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=830&q=80"
-              alt=""
-              className="size-16 rounded object-cover"
-            />
+                <div className="flex flex-1 flex-col justify-between py-4">
+                  <div>
+                    <a href="#" className="mb-1 inline-block text-lg font-bold text-gray-800 transition duration-100 hover:text-gray-500 lg:text-xl">
+                      {item.name}
+                    </a>
+                    <span className="block text-gray-500">Size: {item.size}</span>
+                    <span className="block text-gray-500">Color: {item.color}</span>
+                  </div>
 
-            <div>
-              <h3 className="text-sm text-gray-900">Basic Tee 6-Pack</h3>
-
-              <dl className="mt-0.5 space-y-px text-[10px] text-gray-600">
-                <div>
-                  <dt className="inline">Size:</dt>
-                  <dd className="inline">XXS</dd>
+                  <div>
+                    <span className="mb-1 block font-bold text-gray-800 md:text-lg">${item.price}</span>
+                    <span className="flex items-center gap-1 text-sm text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      In stock
+                    </span>
+                  </div>
                 </div>
 
-                <div>
-                  <dt className="inline">Color:</dt>
-                  <dd className="inline">White</dd>
+                <div className="flex w-full justify-between border-t p-4 sm:w-auto sm:border-none sm:pl-0 lg:p-6 lg:pl-0">
+                  <div className="flex flex-col items-start gap-2">
+                    <div className="flex h-12 w-20 overflow-hidden rounded border">
+                    <input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => handleUpdateItemFromCart(item.productId, item.variantId, e.target.value, item.price)}
+                        className="w-full px-2 py-2 outline-none ring-inset ring-indigo-300 transition duration-100 focus:ring"
+                      />
+
+                      <div className="flex flex-col divide-y border-l">
+                      <button
+                          onClick={() =>
+                            handleUpdateItemFromCart(item.productId, item.variantId, item.quantity + 1, item.price)
+                          }
+                          className="flex w-6 flex-1 select-none items-center justify-center bg-white leading-none transition duration-100 hover:bg-gray-100 active:bg-gray-200"
+                        >
+                          +
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleUpdateItemFromCart(item.productId, item.variantId, Math.max(1, item.quantity - 1), item.price)
+                          }
+                          className="flex w-6 flex-1 select-none items-center justify-center bg-white leading-none transition duration-100 hover:bg-gray-100 active:bg-gray-200"
+                        >
+                          -
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleRemoveItemFromCart(item.productId, item.variantId)}
+                      className="select-none text-sm font-semibold text-indigo-500 transition duration-100 hover:text-indigo-600 active:text-indigo-700"
+                    >
+                      Delete
+                    </button>
+                  </div>
+
+                  <div className="ml-4 pt-3 md:ml-8 md:pt-2 lg:ml-16">
+                    <span className="block font-bold text-gray-800 md:text-lg">${item.totalPrice}</span>
+                  </div>
                 </div>
-              </dl>
-            </div>
+              </div>
+            ))
+          ) : (
+            <div className="flex justify-center items-center h-96">No items in cart</div>
+          )}
+        </div>
 
-            <div className="flex flex-1 items-center justify-end gap-2">
-              <form>
-                <label htmlFor="Line2Qty" className="sr-only"> Quantity </label>
-
-                <input
-                  type="number"
-                  min="1"
-                  value="1"
-                  id="Line2Qty"
-                  className="h-8 w-12 rounded border-gray-200 bg-gray-50 p-0 text-center text-xs text-gray-600 [-moz-appearance:_textfield] focus:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
-                />
-              </form>
-
-              <button className="text-gray-600 transition hover:text-red-600">
-                <span className="sr-only">Remove item</span>
-
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="size-4"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                  />
-                </svg>
-              </button>
-            </div>
-          </li>
-
-          <li className="flex items-center gap-4">
-            <img
-              src="https://images.unsplash.com/photo-1618354691373-d851c5c3a990?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=830&q=80"
-              alt=""
-              className="size-16 rounded object-cover"
-            />
-
-            <div>
-              <h3 className="text-sm text-gray-900">Basic Tee 6-Pack</h3>
-
-              <dl className="mt-0.5 space-y-px text-[10px] text-gray-600">
-                <div>
-                  <dt className="inline">Size:</dt>
-                  <dd className="inline">XXS</dd>
-                </div>
-
-                <div>
-                  <dt className="inline">Color:</dt>
-                  <dd className="inline">White</dd>
-                </div>
-              </dl>
-            </div>
-
-            <div className="flex flex-1 items-center justify-end gap-2">
-              <form>
-                <label htmlFor="Line3Qty" className="sr-only"> Quantity </label>
-
-                <input
-                  type="number"
-                  min="1"
-                  value="1"
-                  id="Line3Qty"
-                  className="h-8 w-12 rounded border-gray-200 bg-gray-50 p-0 text-center text-xs text-gray-600 [-moz-appearance:_textfield] focus:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
-                />
-              </form>
-
-              <button className="text-gray-600 transition hover:text-red-600">
-                <span className="sr-only">Remove item</span>
-
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="size-4"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                  />
-                </svg>
-              </button>
-            </div>
-          </li>
-        </ul>
-
-        <div className="mt-8 flex justify-end border-t border-gray-100 pt-8">
-          <div className="w-screen max-w-lg space-y-4">
-            <dl className="space-y-0.5 text-sm text-gray-700">
-              <div className="flex justify-between">
-                <dt>Subtotal</dt>
-                <dd>£250</dd>
+        {/* Totals */}
+        <div className="flex flex-col items-end gap-4">
+          <div className="w-full rounded-lg bg-gray-100 p-4 sm:max-w-xs">
+            <div className="space-y-1">
+              <div className="flex justify-between gap-4 text-gray-500">
+                <span>Subtotal</span>
+                <span>${cart.total || 0}</span>
               </div>
 
-              <div className="flex justify-between">
-                <dt>VAT</dt>
-                <dd>£25</dd>
+              <div className="flex justify-between gap-4 text-gray-500">
+                <span>Shipping</span>
+                <span>$4.99</span>
               </div>
-
-              <div className="flex justify-between">
-                <dt>Discount</dt>
-                <dd>-£20</dd>
-              </div>
-
-              <div className="flex justify-between !text-base font-medium">
-                <dt>Total</dt>
-                <dd>£200</dd>
-              </div>
-            </dl>
-
-            <div className="flex justify-end">
-              <span
-                className="inline-flex items-center justify-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-indigo-700"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="-ms-1 me-1.5 size-4"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"
-                  />
-                </svg>
-
-                <p className="whitespace-nowrap text-xs">2 Discounts Applied</p>
-              </span>
             </div>
 
-            <div className="flex justify-end">
-              <a
-                href="#"
-                className="block rounded bg-gray-700 px-5 py-3 text-sm text-gray-100 transition hover:bg-gray-600"
-              >
-                Checkout
-              </a>
+            <div className="mt-4 border-t pt-4">
+              <div className="flex items-start justify-between gap-4 text-gray-800">
+                <span className="text-lg font-bold">Total</span>
+
+                <span className="flex flex-col items-end">
+                  <span className="text-lg font-bold">${(cart.total || 0) + 4.99} USD</span>
+                  <span className="text-sm text-gray-500">including VAT</span>
+                </span>
+              </div>
             </div>
           </div>
+
+          <button className="inline-block rounded-lg bg-indigo-500 px-8 py-3 text-center text-sm font-semibold text-white outline-none ring-indigo-300 transition duration-100 hover:bg-indigo-600 focus-visible:ring active:bg-indigo-700 md:text-base">
+            Check out
+          </button>
         </div>
       </div>
     </div>
-  </div>
-</section>
-    </div>
-  )
-}
+  );
+};
 
-export default Cart
+export default Cart;

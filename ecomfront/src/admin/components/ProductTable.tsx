@@ -32,18 +32,21 @@ interface EditState {
 interface EditProduct {
   handleEditProduct: (id: string) => void;
 }
+interface DeleteProduct{
+  handleDeleteProduct: (id: string) => void;
+}
 
 
 // Define the columns for the product table
-const ProductTable: React.FC<{ products: ProductType[] ,setOpenModal:LoginSetState, openModal:LoginState, setEditProduct:EditSetState, editProduct:EditState  ,handleEditProduct:EditProduct }> = ({ products, setOpenModal,openModal, setEditProduct, editProduct, handleEditProduct }) => {
+const ProductTable: React.FC<{ products: ProductType[] ,setOpenModal:LoginSetState, openModal:LoginState, setEditProduct:EditSetState, editProduct:EditState  ,handleEditProduct:EditProduct , handleDeleteProduct:DeleteProduct}> = ({ products, setOpenModal,openModal, setEditProduct, editProduct, handleEditProduct ,handleDeleteProduct}) => {
 
   const columns: TableColumnsType<ProductType> = [
     // Product id
-    {
-      title: 'ID',
-      dataIndex: 'key',
-      sorter: (a, b) => a.key.localeCompare(b.key),
-    },
+    // {
+    //   title: 'ID',
+    //   dataIndex: 'key',
+    //   sorter: (a, b) => a.key.localeCompare(b.key),
+    // },
     {
       title: 'Image',
       dataIndex: 'image',
@@ -85,9 +88,15 @@ const ProductTable: React.FC<{ products: ProductType[] ,setOpenModal:LoginSetSta
       dataIndex: '',
       render: (text, record) => (
         // console.log(record),
-        <Button onClick={() => { setOpenModal(!openModal); setEditProduct(record.key); handleEditProduct(record.key)}}>
+        <div className='flex'>
+
+        <Button className='w-20' onClick={() => { setOpenModal(!openModal); setEditProduct(record.key); handleEditProduct(record.key)}}>
           Edit
         </Button>
+        <Button className='w-20' gradientDuoTone="pinkToOrange" onClick={() => { handleDeleteProduct(record.key)}}>
+          Delete
+        </Button>
+        </div>
       ),
     }
   ];

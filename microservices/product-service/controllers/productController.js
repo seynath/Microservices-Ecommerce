@@ -3,6 +3,8 @@ const Product = require('../models/Product');
 const asyncHandler = require('../middlewares/asyncHandler');
 const axios = require('axios');
 const { getCategoryById, getSubCategoryById } = require('../grpcClient');
+// dotenv
+// require('dotenv').config();
 
 
 // Create a new product
@@ -43,6 +45,59 @@ const createProduct = asyncHandler(async (req, res) => {
   await product.save();
   res.status(201).json(product);
 });
+const getAllProducts = asyncHandler(async (req, res) => {
+  try {
+    // Fetch all products from the database
+    const products = await Product.find();
+
+    // Fetch all categories and subcategories in one request from Category Service
+    const categoryResponse = await axios.get(`${process.env.CATEGORY_SERVICE_URL}/`); // Assuming your API supports fetching all categories and subcategories
+    console.log(categoryResponse.data);
+    const  categories  = categoryResponse.data; // Assuming response contains an array of categories
+    // Create a category and subcategory map for quick lookup
+    const categoryMap = new Map();
+    categories.forEach(category => {
+      categoryMap.set(category._id, category); // Map categories by their ID
+    });
+
+    // Process products and match categories and subcategories
+    const productsWithCategoryDetails = products.map(product => {
+      const category = categoryMap.get(product.categoryId) || null;
+
+      let subCategory = null;
+      if (product.subCategoryId && category && category.subCategories) {
+        subCategory = category.subCategories.find(subCat => subCat._id === product.subCategoryId) || null;
+      }
+
+      // Construct the product object with category and subcategory details
+      return {
+        ...product.toObject(), // Convert product to plain object
+        category: category
+          ? {
+              _id: category._id,
+              name: category.name,
+              description: category.description,
+              image: category.image,
+            }
+          : null,
+        subCategory: subCategory
+          ? {
+              _id: subCategory._id,
+              name: subCategory.name,
+              description: subCategory.description,
+              image: subCategory.image,
+            }
+          : null,
+      };
+    });
+
+    // Return products with category and sub-category details
+    res.status(200).json(productsWithCategoryDetails);
+  } catch (error) {
+    console.error('Error fetching products with category details:', error.message);
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
+});
 
 // // Get all products
 // const getAllProducts = asyncHandler(async (req, res) => {
@@ -52,36 +107,44 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // Fetch all products and populate category and sub-category details
 
-const getAllProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find();
+// Optimized getAllProducts controller
 
-  const productsWithCategoryDetails = [];
+// const getAllProducts = asyncHandler(async (req, res) => {
+//   const products = await Product.find();
 
-  for (const product of products) {
-    try {
-      // Fetch category details using gRPC
-      const category = await getCategoryById(product.categoryId);
+//   const productsWithCategoryDetails = [];
 
-      let subCategory = null;
-      if (product.subCategoryId) {
-        // Fetch sub-category details using gRPC
-        subCategory = await getSubCategoryById(product.categoryId, product.subCategoryId);
-      }
+//   for (const product of products) {
+//     try {
+//       // Fetch category details using gRPC
+//       const category = await getCategoryById(product.categoryId);
 
-      const productWithDetails = {
-        ...product.toObject(),
-        category,
-        subCategory,
-      };
+//       let subCategory = null;
+//       if (product.subCategoryId) {
+//         // Fetch sub-category details using gRPC
+//         subCategory = await getSubCategoryById(product.categoryId, product.subCategoryId);
+//       }
 
-      productsWithCategoryDetails.push(productWithDetails);
-    } catch (error) {
-      console.error(`Error fetching category data for product ${product._id}:`, error.message);
-    }
-  }
+//       const productWithDetails = {
+//         ...product.toObject(),
+//         category,
+//         subCategory,
+//       };
 
-  res.status(200).json(productsWithCategoryDetails);
-});
+//       productsWithCategoryDetails.push(productWithDetails);
+//     } catch (error) {
+//       console.error(`Error fetching category data for product ${product._id}:`, error.message);
+//     }
+//   }
+
+//   res.status(200).json(productsWithCategoryDetails);
+// });
+
+
+
+
+
+
 // const getAllProducts = asyncHandler(async (req, res) => {
 //   // Fetch all products
 //   const products = await Product.find();
@@ -149,6 +212,7 @@ const getProductById = asyncHandler(async (req, res) => {
 // Update a product
 const updateProduct = asyncHandler(async (req, res) => {
   const { name, description, basePrice, categoryId, images, variants } = req.body;
+  console.log(variants)
 
   // Validate category if updated
   if (categoryId) {
@@ -185,35 +249,15 @@ const updateProduct = asyncHandler(async (req, res) => {
 });
 
 
-const getProductPriceByVariant = asyncHandler(async (req, res) => {
-  const { productId, size, color } = req.body;
-
-  const product = await Product.findById(productId);
-  if (!product) {
-    res.status(404);
-    throw new Error('Product not found');
-  }
-
-  // Find the matching variant
-  const variant = product.variants.find(v => v.size === size && v.color === color);
-  if (!variant) {
-    res.status(404);
-    throw new Error('Variant not found');
-  }
-
-  // Return the variant price
-  res.status(200).json({ price: variant.price });
-});
-
 // Delete a product
 const deleteProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findByIdAndDelete(req.params.id);
   if (!product) {
     res.status(404);
     throw new Error('Product not found');
   }
 
-  await product.remove();
+  // await product.remove();
   res.status(200).json({ message: 'Product removed' });
 });
 

@@ -1,4 +1,17 @@
+import { getAllProducts } from "@/features/productSlice";
+import { useState,useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, NavLink } from "react-router-dom";
 const Shop = () => {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getAllProducts());
+  }, [dispatch]);
+  const products = useSelector((state) => state.product.products);
+
+
+
+
   return (
     <div className="flex">
       {/* filter */}
@@ -357,14 +370,15 @@ const Shop = () => {
               {/* <a href="#" className="inline-block rounded-lg border bg-white px-4 py-2 text-center text-sm font-semibold text-gray-500 outline-none ring-indigo-300 transition duration-100 hover:bg-gray-100 focus-visible:ring active:bg-gray-200 md:px-8 md:py-3 md:text-base">Show more</a> */}
             </div>
 
-            <div className="grid gap-x-4 gap-y-8 sm:grid-cols-2 md:gap-x-6 lg:grid-cols-3 xl:grid-cols-4">
-              <div>
-                <a
-                  href="#"
+            <div className="grid gap-x-4 gap-y-8 sm:grid-cols-2 md:gap-x-6 lg:grid-cols-3 xl:grid-cols-4 ">
+     { products && products.length > 0 && products.map((product, index) => (
+              <div key={index} >
+                <NavLink
+                  to={`/product/${product._id}`}
                   className="group relative mb-2 block h-80 overflow-hidden rounded-lg bg-gray-100 lg:mb-3"
                 >
                   <img
-                    src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&q=75&fit=crop&w=600"
+                    src={product.images[0]}
                     loading="lazy"
                     alt="Photo by Rachit Tank"
                     className="h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
@@ -373,28 +387,29 @@ const Shop = () => {
                   <span className="absolute left-0 top-0 rounded-br-lg bg-red-500 px-3 py-1.5 text-sm uppercase tracking-wider text-white">
                     sale
                   </span>
-                </a>
+                </NavLink>
 
                 <div>
-                  <a
-                    href="#"
+                  <NavLink
+                    to="#"
                     className="hover:gray-800 mb-1 text-gray-500 transition duration-100 lg:text-lg"
-                  >
-                    Timely Watch
-                  </a>
+                    >
+                    {product.name}
+                  </NavLink>
 
                   <div className="flex items-end gap-2">
                     <span className="font-bold text-gray-800 lg:text-lg">
-                      $15.00
+                      ${product.basePrice}
                     </span>
                     <span className="mb-0.5 text-red-500 line-through">
-                      $30.00
+                      ${product.basePrice * 1.5}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div>
+                  ) )}
+              {/* <div>
                 <a
                   href="#"
                   className="group relative mb-2 block h-80 overflow-hidden rounded-lg bg-gray-100 lg:mb-3"
@@ -601,7 +616,7 @@ const Shop = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

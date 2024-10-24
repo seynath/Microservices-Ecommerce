@@ -1,5 +1,5 @@
 import './App.css';
-import SingleProductPage from './pages/SingleProductPage';
+import SingleProduct from './pages/SingleProduct';
 import Signup from './pages/Signup';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -30,7 +30,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
           <Route path='/shop' element={<Shop />} />
-          <Route path="/product/:id" element={<SingleProductPage />} />
+          <Route path="/product/:id" element={<SingleProduct />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/test" element={<Test />} />
           <Route path="*" element={<NotFoundPage/>} />

@@ -9,7 +9,7 @@ const variantSchema = new mongoose.Schema({
 
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  description: { type: String, maxlength: 255 },
+  description: { type: String, maxlength: 2000 },
   basePrice: { type: Number, required: true }, // Base price for the product without considering variants
   categoryId: { type: String, required: true }, // Reference to Category Service
   subcategoryId: { type: String }, // Reference to Category Service

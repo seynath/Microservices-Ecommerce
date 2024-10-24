@@ -27,8 +27,8 @@ router.post('/', createProduct);
 // router.post('/', validateProduct(), handleValidation, createProduct);
 router.get('/', getAllProducts);
 router.get('/:id', getProductById);
-router.put('/:id', validateProduct(), handleValidation, updateProduct);
-router.delete('/products/:id', deleteProduct);
+router.put('/:id', updateProduct);
+router.delete('/:id', deleteProduct);
 router.delete('/delete-image',  async (req, res) => {
   console.log(req.body)
   const { public_id } = req.body;
