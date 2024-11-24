@@ -1,6 +1,7 @@
 import { getCart, removeFromCart, updateCartItem } from "@/features/cartSlice";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { NavLink } from "react-router-dom";
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -74,8 +75,12 @@ const Cart = () => {
                     <a href="#" className="mb-1 inline-block text-lg font-bold text-gray-800 transition duration-100 hover:text-gray-500 lg:text-xl">
                       {item.name}
                     </a>
-                    <span className="block text-gray-500">Size: {item.size}</span>
-                    <span className="block text-gray-500">Color: {item.color}</span>
+                    {
+                      item.attributes && item.attributes.map((attr) => (
+                        <span className="block text-gray-500">{attr.key}: {attr.value}</span>
+                      ))
+                    }
+              
                   </div>
 
                   <div>
@@ -165,9 +170,9 @@ const Cart = () => {
             </div>
           </div>
 
-          <button className="inline-block rounded-lg bg-indigo-500 px-8 py-3 text-center text-sm font-semibold text-white outline-none ring-indigo-300 transition duration-100 hover:bg-indigo-600 focus-visible:ring active:bg-indigo-700 md:text-base">
+          <NavLink to={'/checkout'} className="inline-block rounded-lg bg-indigo-500 px-8 py-3 text-center text-sm font-semibold text-white outline-none ring-indigo-300 transition duration-100 hover:bg-indigo-600 focus-visible:ring active:bg-indigo-700 md:text-base">
             Check out
-          </button>
+          </NavLink>
         </div>
       </div>
     </div>

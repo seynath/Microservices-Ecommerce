@@ -1,23 +1,28 @@
 # app/main.py
 from fastapi import FastAPI
-from app.routes.order_routes import router as order_router
 from fastapi.middleware.cors import CORSMiddleware
-
-import uvicorn
+from app.database import engine
+from app.models import Base
+from app.routes import order_routes
 
 app = FastAPI()
+
+# Allow CORS for all origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust as necessary for production
+    allow_origins=["*"],  # Adjust based on your domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Create the database tables if they don't exist
+Base.metadata.create_all(bind=engine)
 
-# Include the order router
-app.include_router(order_router)
+# Register the order routes
+app.include_router(order_routes.router, prefix="/order")
 
-# Main entry point
-if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=6004, reload=True)
+# Test route
+@app.get("/")
+def read_root():
+    return {"message": "Order service is running!"}

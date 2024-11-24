@@ -2,7 +2,25 @@ import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 import { product_service_url } from '@/api/ProductAPI';
 
+interface Product {
+  _id: string;
+  name: string;
+  variants: Variant[];
+  images: string[];
+  basePrice: number;
+}
 
+interface Variant {
+  _id: string;
+  attributes: Attribute[];
+  price: number;
+  stock_quantity: number;
+}
+
+interface Attribute {
+  key: string;
+  value: string;
+}
 
 export const getAllProducts = createAsyncThunk(
   'product/getAllProducts', 
@@ -20,11 +38,12 @@ export const getAllProducts = createAsyncThunk(
   }
 );
 
-export const getProduct = createAsyncThunk(
+export const getProduct = createAsyncThunk<Product[]>(
   'product/getProduct', 
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${product_service_url}/${id}`);
+      console.log("Product fetched:", response.data);
       return response.data ;
     } catch (error: unknown) {
       if (error instanceof Error) {

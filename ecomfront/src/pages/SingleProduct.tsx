@@ -2,16 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { getProduct } from "@/features/productSlice";
-import { addToCart } from "@/features/cartSlice"; // Assuming you have a cartSlice
+import { addToCart } from "@/features/cartSlice";
 
 const SingleProduct: React.FC = () => {
   const param = useParams();
   const dispatch = useDispatch();
 
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedAttributes, setSelectedAttributes] = useState<{ [key: string]: string }>({});
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
-  const [quantity, setQuantity] = useState<number>(1); // Quantity state
+  const [quantity, setQuantity] = useState<number>(1);
 
   useEffect(() => {
     dispatch(getProduct(param.id));
@@ -19,69 +18,30 @@ const SingleProduct: React.FC = () => {
 
   const product = useSelector((state: any) => state.product.singleProduct);
 
-  // Handle color selection
-  const handleSelectColor = (color: string) => {
-    setSelectedColor(color);
-    if (selectedSize) {
-      // Try to find the variant based on both size and color
-      const variant = product?.variants.find(
-        (v: any) => v.size === selectedSize && v.color === color
-      );
-      setSelectedVariant(variant);
-    }
+  // Update selected attributes and find the corresponding variant
+  const handleSelectAttribute = (attributeName: string, value: string) => {
+    const updatedAttributes = { ...selectedAttributes, [attributeName]: value };
+    setSelectedAttributes(updatedAttributes);
+
+    // Find the variant matching all selected attributes
+    const variant = product?.variants.find((v: any) =>
+      v.attributes.every(
+        (attr: any) => updatedAttributes[attr.key] === attr.value
+      )
+    );
+    setSelectedVariant(variant || null);
   };
 
-  // Handle size selection
-  const handleSelectSize = (size: string) => {
-    setSelectedSize(size);
-    if (selectedColor) {
-      // Try to find the variant based on both size and color
-      const variant = product?.variants.find(
-        (v: any) => v.size === size && v.color === selectedColor
-      );
-      setSelectedVariant(variant);
-    }
-  };
-
-  // Find variant based on selected color and size
-  useEffect(() => {
-    if (!selectedColor && selectedSize) {
-      // If only size is selected and no color is available
-      const variant = product?.variants.find(
-        (v: any) => v.size === selectedSize && !v.color
-      );
-      setSelectedVariant(variant);
-    }
-    if (!selectedSize && selectedColor) {
-      // If only color is selected and no size is available
-      const variant = product?.variants.find(
-        (v: any) => v.color === selectedColor && !v.size
-      );
-      setSelectedVariant(variant);
-    }
-  }, [product, selectedColor, selectedSize]);
-
-  // Check if the product has only one variant without color and size
-  const isSingleVariantWithoutOptions =
-    product?.variants?.length === 1 &&
-    !product.variants[0].color &&
-    !product.variants[0].size;
-
-  // If it's a single variant product without color and size, use that variant directly
-  useEffect(() => {
-    if (isSingleVariantWithoutOptions) {
-      setSelectedVariant(product?.variants[0]);
-    }
-  }, [isSingleVariantWithoutOptions, product]);
-
-  // Get unique colors and sizes from the variants
-  const uniqueColors = product?.variants
-    ? Array.from(new Set(product.variants.map((v: any) => v.color).filter(Boolean))) // Filter out empty colors
-    : [];
-
-  const uniqueSizes = product?.variants
-    ? Array.from(new Set(product.variants.map((v: any) => v.size).filter(Boolean))) // Filter out empty sizes
-    : [];
+  // Extract unique values for each attribute
+  const uniqueAttributes: { [key: string]: string[] } = {};
+  product?.variants.forEach((variant: any) => {
+    variant.attributes.forEach((attr: any) => {
+      if (!uniqueAttributes[attr.key]) uniqueAttributes[attr.key] = [];
+      if (!uniqueAttributes[attr.key].includes(attr.value)) {
+        uniqueAttributes[attr.key].push(attr.value);
+      }
+    });
+  });
 
   // Handle quantity change
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,7 +61,7 @@ const SingleProduct: React.FC = () => {
       );
       alert("Added to cart!");
     } else {
-      alert("Please select a variant.");
+      alert("Please select all required options.");
     }
   };
 
@@ -136,60 +96,40 @@ const SingleProduct: React.FC = () => {
                 <h2 className="text-2xl font-bold text-gray-800 lg:text-3xl">{product?.name}</h2>
               </div>
 
-              {/* Color and Size Selection */}
-              {!isSingleVariantWithoutOptions && (
-                <>
-                  {/* Color Selection */}
-                  {uniqueColors.length > 0 && (
-                    <div className="mb-4 md:mb-6">
-                      <span className="mb-3 inline-block text-sm font-semibold text-gray-500 md:text-base">Color</span>
-                      <div className="flex flex-wrap gap-2">
-                        {uniqueColors.map((color: string, index: number) => (
-                          <button
-                            key={index}
-                            type="button"
-                            className={`h-8 w-8 rounded-full border ${selectedColor === color ? 'bg-indigo-500 ring-2 ring-white ring-offset-1' : 'bg-gray-500 ring-2 ring-transparent ring-offset-1'} transition duration-100 hover:ring-gray-200`}
-                            onClick={() => handleSelectColor(color)}
-                          >
-                            {color}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Size Selection */}
-                  {uniqueSizes && uniqueSizes.length > 0 && (
-                    <div className="mb-8 md:mb-10">
-                      <span className="mb-3 inline-block text-sm font-semibold text-gray-500 md:text-base">Size</span>
-                      <div className="flex flex-wrap gap-3">
-                        {uniqueSizes.map((size: string, index: number) => (
-                          <button
-                            key={index}
-                            type="button"
-                            className={`flex h-8 w-12 items-center justify-center rounded-md border ${
-                              selectedSize === size ? 'bg-indigo-500 text-white' : 'bg-white text-gray-800'
-                            } transition duration-100 hover:bg-gray-100 active:bg-gray-200`}
-                            onClick={() => handleSelectSize(size)}
-                          >
-                            {size}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
+              {/* Dynamic Attribute Selection */}
+              {Object.keys(uniqueAttributes).map((attribute, index) => (
+                <div key={index} className="mb-4 md:mb-6">
+                  <span className="mb-3 inline-block text-sm font-semibold text-gray-500 md:text-base">
+                    {attribute}
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueAttributes[attribute].map((value, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`h-8 w-20 rounded border ${
+                          selectedAttributes[attribute] === value
+                            ? "bg-indigo-500 text-white"
+                            : "bg-white text-gray-800"
+                        } transition duration-100 hover:bg-gray-100 active:bg-gray-200`}
+                        onClick={() => handleSelectAttribute(attribute, value)}
+                      >
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
 
               {/* Price, Stock, and Quantity */}
-              {selectedVariant || isSingleVariantWithoutOptions ? (
+              {selectedVariant ? (
                 <div className="mb-4">
                   <div className="flex items-end gap-2">
                     <span className="text-xl font-bold text-gray-800 md:text-2xl">
-                      ${selectedVariant ? selectedVariant.price : product?.variants[0]?.price}
+                      ${selectedVariant.price}
                     </span>
                     <span className="text-sm text-gray-500">
-                      Stock: {selectedVariant ? selectedVariant.stock_quantity : product?.variants[0]?.stock_quantity}
+                      Stock: {selectedVariant.stock_quantity}
                     </span>
                   </div>
                   <div className="mt-4">
@@ -197,7 +137,7 @@ const SingleProduct: React.FC = () => {
                     <input
                       type="number"
                       min="1"
-                      max={selectedVariant ? selectedVariant.stock_quantity : product?.variants[0]?.stock_quantity}
+                      max={selectedVariant.stock_quantity}
                       value={quantity}
                       onChange={handleQuantityChange}
                       className="w-20 px-2 py-1 border rounded"
@@ -208,7 +148,7 @@ const SingleProduct: React.FC = () => {
                 <div className="mb-4">
                   <div className="flex items-end gap-2">
                     <span className="text-xl font-bold text-gray-800 md:text-2xl">${product?.basePrice}</span>
-                    <span className="text-sm text-red-500">Stock: {0}</span>
+                    <span className="text-sm text-red-500">Stock: 0</span>
                   </div>
                 </div>
               )}
@@ -232,6 +172,259 @@ const SingleProduct: React.FC = () => {
 };
 
 export default SingleProduct;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// All time greatest is below
+
+
+
+// import React, { useState, useEffect } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+// import { useParams } from "react-router-dom";
+// import { getProduct } from "@/features/productSlice";
+// import { addToCart } from "@/features/cartSlice"; // Assuming you have a cartSlice
+
+// const SingleProduct: React.FC = () => {
+//   const param = useParams();
+//   const dispatch = useDispatch();
+
+//   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+//   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+//   const [selectedVariant, setSelectedVariant] = useState<any>(null);
+//   const [quantity, setQuantity] = useState<number>(1); // Quantity state
+
+//   useEffect(() => {
+//     dispatch(getProduct(param.id));
+//   }, [param.id]);
+
+//   const product = useSelector((state: any) => state.product.singleProduct);
+
+//   // Handle color selection
+//   const handleSelectColor = (color: string) => {
+//     setSelectedColor(color);
+//     if (selectedSize) {
+//       // Try to find the variant based on both size and color
+//       const variant = product?.variants.find(
+//         (v: any) => v.size === selectedSize && v.color === color
+//       );
+//       setSelectedVariant(variant);
+//     }
+//   };
+
+//   // Handle size selection
+//   const handleSelectSize = (size: string) => {
+//     setSelectedSize(size);
+//     if (selectedColor) {
+//       // Try to find the variant based on both size and color
+//       const variant = product?.variants.find(
+//         (v: any) => v.size === size && v.color === selectedColor
+//       );
+//       setSelectedVariant(variant);
+//     }
+//   };
+
+//   // Find variant based on selected color and size
+//   useEffect(() => {
+//     if (!selectedColor && selectedSize) {
+//       // If only size is selected and no color is available
+//       const variant = product?.variants.find(
+//         (v: any) => v.size === selectedSize && !v.color
+//       );
+//       setSelectedVariant(variant);
+//     }
+//     if (!selectedSize && selectedColor) {
+//       // If only color is selected and no size is available
+//       const variant = product?.variants.find(
+//         (v: any) => v.color === selectedColor && !v.size
+//       );
+//       setSelectedVariant(variant);
+//     }
+//   }, [product, selectedColor, selectedSize]);
+
+//   // Check if the product has only one variant without color and size
+//   const isSingleVariantWithoutOptions =
+//     product?.variants?.length === 1 &&
+//     !product.variants[0].color &&
+//     !product.variants[0].size;
+
+//   // If it's a single variant product without color and size, use that variant directly
+//   useEffect(() => {
+//     if (isSingleVariantWithoutOptions) {
+//       setSelectedVariant(product?.variants[0]);
+//     }
+//   }, [isSingleVariantWithoutOptions, product]);
+
+//   // Get unique colors and sizes from the variants
+//   const uniqueColors = product?.variants
+//     ? Array.from(new Set(product.variants.map((v: any) => v.color).filter(Boolean))) // Filter out empty colors
+//     : [];
+
+//   const uniqueSizes = product?.variants
+//     ? Array.from(new Set(product.variants.map((v: any) => v.size).filter(Boolean))) // Filter out empty sizes
+//     : [];
+
+//   // Handle quantity change
+//   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     setQuantity(Number(e.target.value));
+//   };
+
+//   // Handle add to cart
+//   const handleAddToCart = () => {
+//     if (selectedVariant) {
+//       dispatch(
+//         addToCart({
+//           productId: product._id,
+//           variantId: selectedVariant._id,
+//           quantity,
+//           price: selectedVariant.price,
+//         })
+//       );
+//       alert("Added to cart!");
+//     } else {
+//       alert("Please select a variant.");
+//     }
+//   };
+
+//   return (
+//     <div>
+//       <div className="bg-white py-6 sm:py-8 lg:py-12">
+//         <div className="mx-auto max-w-screen-lg px-4 md:px-8">
+//           <div className="grid gap-8 md:grid-cols-2">
+//             {/* Images */}
+//             <div className="space-y-4">
+//               <div className="relative overflow-hidden rounded-lg bg-gray-100">
+//                 <img
+//                   src={product?.images[0]}
+//                   loading="lazy"
+//                   alt={product?.name}
+//                   className="md:h-[500px] w-full object-cover object-center"
+//                 />
+//               </div>
+//               <div className="grid grid-cols-2 gap-4">
+//                 {product?.images?.map((image: string, index: number) => (
+//                   <div key={index} className="overflow-hidden rounded-lg bg-gray-100">
+//                     <img src={image} loading="lazy" alt={product?.name} className="h-full w-full md:h-[300px] object-cover object-center" />
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+
+//             {/* Content */}
+//             <div className="md:py-8">
+//               <div className="mb-2 md:mb-3">
+//                 <span className="mb-0.5 inline-block text-gray-500">Fancy Brand</span>
+//                 <h2 className="text-2xl font-bold text-gray-800 lg:text-3xl">{product?.name}</h2>
+//               </div>
+
+//               {/* Color and Size Selection */}
+//               {!isSingleVariantWithoutOptions && (
+//                 <>
+//                   {/* Color Selection */}
+//                   {uniqueColors.length > 0 && (
+//                     <div className="mb-4 md:mb-6">
+//                       <span className="mb-3 inline-block text-sm font-semibold text-gray-500 md:text-base">Color</span>
+//                       <div className="flex flex-wrap gap-2">
+//                         {uniqueColors.map((color: string, index: number) => (
+//                           <button
+//                             key={index}
+//                             type="button"
+//                             className={`h-8 w-8 rounded-full border ${selectedColor === color ? 'bg-indigo-500 ring-2 ring-white ring-offset-1' : 'bg-gray-500 ring-2 ring-transparent ring-offset-1'} transition duration-100 hover:ring-gray-200`}
+//                             onClick={() => handleSelectColor(color)}
+//                           >
+//                             {color}
+//                           </button>
+//                         ))}
+//                       </div>
+//                     </div>
+//                   )}
+
+//                   {/* Size Selection */}
+//                   {uniqueSizes && uniqueSizes.length > 0 && (
+//                     <div className="mb-8 md:mb-10">
+//                       <span className="mb-3 inline-block text-sm font-semibold text-gray-500 md:text-base">Size</span>
+//                       <div className="flex flex-wrap gap-3">
+//                         {uniqueSizes.map((size: string, index: number) => (
+//                           <button
+//                             key={index}
+//                             type="button"
+//                             className={`flex h-8 w-12 items-center justify-center rounded-md border ${
+//                               selectedSize === size ? 'bg-indigo-500 text-white' : 'bg-white text-gray-800'
+//                             } transition duration-100 hover:bg-gray-100 active:bg-gray-200`}
+//                             onClick={() => handleSelectSize(size)}
+//                           >
+//                             {size}
+//                           </button>
+//                         ))}
+//                       </div>
+//                     </div>
+//                   )}
+//                 </>
+//               )}
+
+//               {/* Price, Stock, and Quantity */}
+//               {selectedVariant || isSingleVariantWithoutOptions ? (
+//                 <div className="mb-4">
+//                   <div className="flex items-end gap-2">
+//                     <span className="text-xl font-bold text-gray-800 md:text-2xl">
+//                       ${selectedVariant ? selectedVariant.price : product?.variants[0]?.price}
+//                     </span>
+//                     <span className="text-sm text-gray-500">
+//                       Stock: {selectedVariant ? selectedVariant.stock_quantity : product?.variants[0]?.stock_quantity}
+//                     </span>
+//                   </div>
+//                   <div className="mt-4">
+//                     <label className="block mb-2 text-sm font-semibold text-gray-500">Quantity</label>
+//                     <input
+//                       type="number"
+//                       min="1"
+//                       max={selectedVariant ? selectedVariant.stock_quantity : product?.variants[0]?.stock_quantity}
+//                       value={quantity}
+//                       onChange={handleQuantityChange}
+//                       className="w-20 px-2 py-1 border rounded"
+//                     />
+//                   </div>
+//                 </div>
+//               ) : (
+//                 <div className="mb-4">
+//                   <div className="flex items-end gap-2">
+//                     <span className="text-xl font-bold text-gray-800 md:text-2xl">${product?.basePrice}</span>
+//                     <span className="text-sm text-red-500">Stock: {0}</span>
+//                   </div>
+//                 </div>
+//               )}
+
+//               {/* Add to Cart Button */}
+//               <div className="flex gap-2.5">
+//                 <button
+//                   type="button"
+//                   onClick={handleAddToCart}
+//                   className="inline-block flex-1 rounded-lg bg-indigo-500 px-8 py-3 text-center text-sm font-semibold text-white outline-none ring-indigo-300 transition duration-100 hover:bg-indigo-600 focus-visible:ring active:bg-indigo-700 sm:flex-none md:text-base"
+//                 >
+//                   Add to cart
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default SingleProduct;
 
 
 

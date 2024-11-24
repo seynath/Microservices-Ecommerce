@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Navigate, NavLink,useNavigate } from "react-router-dom";
+import { Navigate, NavLink, useNavigate } from "react-router-dom";
 import { login } from "../api/UserAPI";
 import "ldrs/ring";
 import { useDispatch } from "react-redux";
@@ -28,7 +28,7 @@ const Login = () => {
       .unwrap()
       .then((response) => {
         console.log("User logged in:", response);
-        if(response.status === "success") {
+        if (response.status === "success") {
           navigate("/");
         }
         setLoading(false);

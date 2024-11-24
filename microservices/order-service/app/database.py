@@ -1,26 +1,29 @@
-# # app/database.py
-# import motor.motor_asyncio
-# import os
-# from dotenv import load_dotenv
-# import ssl
-
-# load_dotenv()
-
-# MONGO_URI = os.getenv("MONGO_URI")
-
-# client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI, ssl=True, ssl_cert_reqs=ssl.CERT_NONE)
-# database = client['order']  # Use the 'order' database as per your URI
-# order_collection = database.get_collection("orders")
- 
-from motor.motor_asyncio import AsyncIOMotorClient
+# app/database.py
 import os
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-import certifi
 
+# Load environment variables from the .env file
 load_dotenv()
 
-MONGO_URI = os.getenv("MONGO_URI")
+# Get the DATABASE_URL from environment variables
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-client = AsyncIOMotorClient(MONGO_URI, tlsCAFile=certifi.where())
-database = client['order']
-order_collection = database.get_collection("orders")
+# Create the SQLAlchemy engine
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+
+# Create a sessionmaker factory
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Base class for models
+Base = declarative_base()
+
+# Dependency to get the database session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

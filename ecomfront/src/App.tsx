@@ -10,12 +10,15 @@ import Dashboard from '@/admin/Dashboard'
 import Product from '@/admin/Product'
 import Category from '@/admin/Category'
 import Shop from './pages/Shop';
+import Order from './pages/Order';
 
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Cart from './pages/Cart';
 import NotFoundPage from './pages/NotFoundPage';
 import Profile from './pages/Profile';
+import Checkout from './pages/Checkout';
+import OrderCompleted from './pages/OrderCompleted';
 
 
 function App() {
@@ -32,7 +35,10 @@ function App() {
           <Route path='/shop' element={<Shop />} />
           <Route path="/product/:id" element={<SingleProduct />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path='/checkout' element={<Checkout />} />
+          <Route path='/order' element={<Order/>} />
           <Route path="/test" element={<Test />} />
+          <Route path="/order-complete" element={<OrderCompleted />} />
           <Route path="*" element={<NotFoundPage/>} />
 
           {/* another layout */}

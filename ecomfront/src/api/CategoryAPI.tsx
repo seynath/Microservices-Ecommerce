@@ -1,4 +1,4 @@
-const category_service_url = "http://localhost:6002/category"
+const category_service_url = import.meta.env.VITE_CATEGORY_SERVICE_URL;
 import axios from "axios";
 
 

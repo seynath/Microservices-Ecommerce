@@ -125,7 +125,7 @@ console.log(user)
                 <NavLink to={"/profile"}>My Account</NavLink>
               </li>
               <li>
-                <NavLink to={"/orders"}>My Orders</NavLink>
+                <NavLink to={"/order"}>My Orders</NavLink>
               </li>
               <li>
                 <div onClick={handleLogout} >Logout</div>

@@ -33,6 +33,8 @@ const addToCart = async (req, res) => {
   //   basePrice,
   //   userId,
   // });
+  console.log(variantId);
+  
 
 
   try {
@@ -46,9 +48,9 @@ const addToCart = async (req, res) => {
 // const availableVariantStock = variant[0].stock_quantity
 // console.log(product)
 const variant = product.variants.find(variant => variant._id === variantId);
-// console.log(variant)
+console.log(variant)
 const availableVariantStock = variant ? variant.stock_quantity : 0;
-// console.log(availableVariantStock);
+console.log(availableVariantStock);
 
     // Fetch the current cart from Redis
     let cart = await client.get(getCartKey(userId));
@@ -67,11 +69,12 @@ const availableVariantStock = variant ? variant.stock_quantity : 0;
     } else {
       // Add new item to the cart
       const newItem = {
-        image: product.images[0],
-        color: variant.color,
-        size: variant.size,
         productId,
         variantId,
+        image: product.images[0],
+        attributes: variant.attributes,
+        // color: variant.color,
+        // size: variant.size,
         name: product.name,
         price: price,
         quantity,
@@ -96,7 +99,64 @@ const availableVariantStock = variant ? variant.stock_quantity : 0;
 // Update the quantity of a cart item
 
 
+// const updateCartItem = async (req, res) => {
+//   const userId = req.params.userId;
+//   const { productId, variantId, quantity, price } = req.body;
+
+//   try {
+//     // Fetch the product details from the Product Service
+//     const product = await getProductDetails(productId);
+//     if (!product) {
+//       return res.status(404).json({ error: 'Product not found' });
+//     }
+
+//     // Find the specific variant
+//     const variant = product.variants.find(v => v._id === variantId);
+//     if (!variant) {
+//       return res.status(404).json({ error: 'Variant not found' });
+//     }
+
+//     // Check if the requested quantity is available in stock
+//     if (variant.stock_quantity < quantity) {
+//       return res.status(400).json({ error: 'Requested quantity exceeds available stock' });
+//     }
+
+//     // Fetch the current cart from Redis
+//     let cart = await client.get(getCartKey(userId));
+//     if (!cart) {
+//       return res.status(404).json({ error: 'Cart not found' });
+//     }
+//     cart = JSON.parse(cart);
+
+//     // Find the cart item with matching product and variant
+//     const itemIndex = cart.items.findIndex(
+//       (item) => item.productId === productId && item.variantId === variantId
+//     );
+//     if (itemIndex === -1) {
+//       return res.status(404).json({ error: 'Item not found in cart' });
+//     }
+
+//     // Update the quantity and total price
+//     cart.items[itemIndex].quantity = quantity;
+//     cart.items[itemIndex].totalPrice = quantity * price;
+
+//     // Recalculate the total cart price
+//     cart.total = cart.items.reduce((acc, item) => acc + item.totalPrice, 0);
+
+//     // Save the updated cart to Redis
+//     await client.set(getCartKey(userId), JSON.stringify(cart));
+
+//     return res.status(200).json(cart);
+//   } catch (error) {
+//     console.error('Error updating cart item:', error);
+//     return res.status(500).json({ error: 'Failed to update cart item' });
+//   }
+// };
+
 const updateCartItem = async (req, res) => {
+  console.log("====================================");
+  
+  console.log(req.params);
   const userId = req.params.userId;
   const { productId, variantId, quantity, price } = req.body;
 
@@ -136,6 +196,11 @@ const updateCartItem = async (req, res) => {
     // Update the quantity and total price
     cart.items[itemIndex].quantity = quantity;
     cart.items[itemIndex].totalPrice = quantity * price;
+
+    // If the available quantity is 0, remove the item from the cart
+    if (variant.stock_quantity === 0 || quantity === 0) {
+      cart.items.splice(itemIndex, 1);
+    }
 
     // Recalculate the total cart price
     cart.total = cart.items.reduce((acc, item) => acc + item.totalPrice, 0);
@@ -308,9 +373,25 @@ const removeFromCart = async (req, res) => {
     return res.status(500).json({ error: 'Failed to remove item from cart' });
   }
 };
+
+const emptyCart = async (req, res) => {
+  console.log(req.params)
+  const userId = req.params.userId;
+  
+    try {
+      // Delete the cart from Redis
+      await client.del(getCartKey(userId));
+      return res.status(200).json({ message: 'Cart emptied successfully' });
+    } catch (error) {
+      console.error('Error emptying cart:', error);
+      return res.status(500).json({ error: 'Failed to empty cart' });
+    }
+  };
+
 module.exports = {
   getCart,
   addToCart,
   updateCartItem,
   removeFromCart,
+  emptyCart
 };

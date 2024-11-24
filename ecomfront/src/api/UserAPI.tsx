@@ -1,4 +1,4 @@
-export const user_service_url = "http://localhost:6001/user"
+export const user_service_url = import.meta.env.VITE_USER_SERVICE_URL;
 import axios from "axios";
 
 
@@ -21,7 +21,7 @@ export const signup = async (user: object): Promise<object> => {
   try {
     console.log("Registering user:", user);
     const response = await axios.post(`${user_service_url}/register`, user);
-    console.log("User registered:", response.data);
+    console.log("User registered:", response);
     return response.data;
   } catch (error) {
     console.error("Error registering user:", error);

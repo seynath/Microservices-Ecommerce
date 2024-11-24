@@ -15,6 +15,7 @@ const generateRefreshToken = (user) => {
 // Register a new user
 const registerUser = async (req, res) => {
 
+  console.log("aawa")
   const { name, email, password ,mobile} = req.body;
   try {
     // Check if user already exists

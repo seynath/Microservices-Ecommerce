@@ -10,7 +10,7 @@ const { errorHandler } = require('./middlewares/errorHandler');
 
 // Initialize Express App
 const app = express();
-const PORT = process.env.PORT || 6001;
+const PORT = process.env.PORT || 6005;
 
 // Middleware
 app.use(helmet()); // Security headers

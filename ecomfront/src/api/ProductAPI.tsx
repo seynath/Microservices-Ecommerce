@@ -1,4 +1,4 @@
-export const product_service_url = "http://localhost:6003/product"
+export const product_service_url = import.meta.env.VITE_PRODUCT_SERVICE_URL;
 import axios from "axios";
 
 

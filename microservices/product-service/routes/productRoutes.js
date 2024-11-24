@@ -1,5 +1,5 @@
 const express = require('express');
-const { createProduct, getAllProducts, getProductById, updateProduct, deleteProduct } = require('../controllers/productController');
+const { createProduct, getAllProducts, getProductById, updateProduct, deleteProduct ,checkProductAvailability, decreaseQuantity} = require('../controllers/productController');
 const { validateProduct } = require('../validations/productValidation');
 const { validationResult } = require('express-validator');
 const asyncHandler = require('../middlewares/asyncHandler');
@@ -24,9 +24,11 @@ cloudinary.config({
 
 
 router.post('/', createProduct);
+router.post('/deduct-quantity', decreaseQuantity);
 // router.post('/', validateProduct(), handleValidation, createProduct);
 router.get('/', getAllProducts);
 router.get('/:id', getProductById);
+router.get('/check-availability/:product_id', checkProductAvailability);
 router.put('/:id', updateProduct);
 router.delete('/:id', deleteProduct);
 router.delete('/delete-image',  async (req, res) => {

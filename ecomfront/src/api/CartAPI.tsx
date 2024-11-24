@@ -1,3 +1,3 @@
-export const cart_service_url = "http://localhost:6004/cart"
+export const cart_service_url = import.meta.env.VITE_CART_SERVICE_URL;
 import axios from "axios";
 

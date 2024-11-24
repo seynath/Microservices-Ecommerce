@@ -38,11 +38,16 @@ export const getCart = createAsyncThunk(
     try {
       // Get user from the state
       const state = getState() as { user: { user: { id: string } } };
-      const userId = state.user?.user?.id; // Assuming the user ID is stored in the state
+      let userId = state.user?.user?.id; // Assuming the user ID is stored in the state
 
-      // If no user is found, throw an error
+      // If no user is found, try to get it from localStorage
       if (!userId) {
-        throw new Error("User not logged in");
+        const user = localStorage.getItem("user");
+        if (user) {
+          userId = JSON.parse(user).id;
+        } else {
+          throw new Error("User not logged in");
+        }
       }
       console.log(values);
       const response = await axios.get(`${cart_service_url}/${userId}`, values);
@@ -74,6 +79,33 @@ export const removeFromCart = createAsyncThunk(
       }
       console.log(values);
       const response = await axios.post(`${cart_service_url}/delete/${userId}`, values);
+      console.log(response.data);
+      return response.data;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(
+          (error as Error & { response?: { data: unknown } }).response?.data ||
+            error.message
+        );
+      }
+      return rejectWithValue("An unknown error occurred");
+    }
+  }
+);
+export const emptyCart = createAsyncThunk(
+  "cart/emptyCart",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      // Get user from the state
+      const state = getState() as { user: { user: { id: string } } };
+      const userId = state.user?.user?.id; // Assuming the user ID is stored in the state
+
+      // If no user is found, throw an error
+      if (!userId) {
+        throw new Error("User not logged in");
+      }
+      console.log(values);
+      const response = await axios.delete(`${cart_service_url}/empty/${userId}`);
       console.log(response.data);
       return response.data;
     } catch (error: unknown) {
@@ -209,6 +241,27 @@ export const cartSlice = createSlice({
         state.message = "Product updated in cart";
       })
       .addCase(updateCartItem.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.isSuccess = false;
+        state.message =
+          action.payload &&
+          typeof action.payload === "object" &&
+          "message" in action.payload
+            ? (action.payload as { message: string }).message
+            : "An Server error occurred";
+      })
+      .addCase(emptyCart.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(emptyCart.fulfilled, (state, action) => {
+        state.cart = action.payload;
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.isError = false;
+        state.message = "Cart emptied";
+      })
+      .addCase(emptyCart.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.isSuccess = false;
