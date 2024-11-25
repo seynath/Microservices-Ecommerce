@@ -12,6 +12,18 @@ variables:
   tag: '$(Build.BuildId)'
 
 stages:
+- stage: NPM_Install
+  displayName: NPM install Step
+  jobs:
+  - job: NPM_Install_Job
+    displayName: NPM_Installing
+    pool: ailife-azure-vmss-pool
+    steps:
+    - task: Npm@1
+      inputs:
+        command: 'install'
+        workingDir: 'ecomfront'
+      
 - stage: Build
   displayName: Build image
   jobs:
