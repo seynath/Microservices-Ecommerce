@@ -9,6 +9,12 @@ message Category {
   string image = 4;
 }
 
+message GetAllCategoriesRequest {}
+
+message GetAllCategoriesResponse {
+  repeated Category categories = 1;
+}
+
 message GetCategoryRequest {
   string categoryId = 1;
 }
@@ -27,6 +33,7 @@ message GetSubCategoryResponse {
 }
 
 service CategoryService {
+  rpc GetAllCategories(GetAllCategoriesRequest) returns (GetAllCategoriesResponse);
   rpc GetCategory(GetCategoryRequest) returns (GetCategoryResponse);
   rpc GetSubCategory(GetSubCategoryRequest) returns (GetSubCategoryResponse);
 }

@@ -21,6 +21,7 @@ app.use(bodyParser.json());
 // Routes
 app.use('/product', productRoutes);
 
+
 // Error handling middleware
 app.use(errorHandler);
 

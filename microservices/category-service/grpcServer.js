@@ -15,6 +15,7 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 
 const categoryProto = grpc.loadPackageDefinition(packageDefinition).category;
 
+
 // Implement gRPC service methods
 const getCategory = async (call, callback) => {
   const { categoryId } = call.request;
@@ -37,6 +38,7 @@ const getCategory = async (call, callback) => {
     });
   }
 };
+
 
 const getSubCategory = async (call, callback) => {
   const { categoryId, subCategoryId } = call.request;
@@ -68,6 +70,25 @@ const getSubCategory = async (call, callback) => {
   }
 };
 
+const getAllCategories = async (call, callback) => {
+  try {
+    const categories = await Category.find();
+    const categoryList = categories.map((cat) => ({
+      id: cat._id.toString(),
+      name: cat.name,
+      description: cat.description,
+      image: cat.image,
+    }));
+    callback(null, { categories: categoryList });
+  } catch (error) {
+    // callback(error);
+    callback({
+      code: grpc.status.INTERNAL,
+      message: error.message,
+    });
+  }
+};
+
 // Define the gRPC server
 const startGrpcServer = () => {
   const server = new grpc.Server();
@@ -76,6 +97,7 @@ const startGrpcServer = () => {
   server.addService(categoryProto.CategoryService.service, {
     GetCategory: getCategory,
     GetSubCategory: getSubCategory,
+    GetAllCategories: getAllCategories,
   });
 
   const port = '50051';

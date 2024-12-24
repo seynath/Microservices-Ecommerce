@@ -45,3 +45,37 @@ docker --version
 docker-compose --version
 
 echo "Docker installation completed successfully."
+
+
+# Set Terraform GPG key and repository URL
+TERRAFORM_GPG_URL="https://apt.releases.hashicorp.com/gpg"
+TERRAFORM_REPO="https://apt.releases.hashicorp.com"
+KEYRING_PATH="/usr/share/keyrings/hashicorp-archive-keyring.gpg"
+SOURCE_LIST_PATH="/etc/apt/sources.list.d/hashicorp.list"
+
+# Step 1: Download and add HashiCorp GPG key securely
+echo "Adding HashiCorp GPG key..."
+sudo wget -qO - "$TERRAFORM_GPG_URL" | sudo gpg --dearmor -o "$KEYRING_PATH"
+sudo chmod 644 "$KEYRING_PATH"
+
+# Step 2: Add HashiCorp APT repository with proper GPG keyring
+echo "Setting up HashiCorp APT repository..."
+echo "deb [arch=$(dpkg --print-architecture) signed-by=$KEYRING_PATH] $TERRAFORM_REPO $(lsb_release -cs) main" | sudo tee "$SOURCE_LIST_PATH" > /dev/null
+
+# Step 3: Update package list and install Terraform
+echo "Updating package list and installing Terraform..."
+sudo apt-get update -y
+sudo apt-get install -y terraform
+
+# Step 4: Verify the installation of Terraform
+echo "Terraform installation completed. Verifying version..."
+terraform --version
+
+# Output completion message
+echo "Terraform installation is complete."
+
+sudo apt-get install zip
+
+zip --version
+
+echo "Zip installation completed successfully."

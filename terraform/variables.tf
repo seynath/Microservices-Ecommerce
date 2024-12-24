@@ -1,7 +1,0 @@
-variable "prefix" {
-
-}
-
-variable "location" {
-
-}

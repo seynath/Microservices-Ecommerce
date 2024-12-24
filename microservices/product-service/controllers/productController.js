@@ -2,7 +2,7 @@ const { validationResult } = require('express-validator');
 const Product = require('../models/Product');
 const asyncHandler = require('../middlewares/asyncHandler');
 const axios = require('axios');
-const { getCategoryById, getSubCategoryById } = require('../grpcClient');
+const { getCategoryById, getSubCategoryById , getAllCategories} = require('../grpcClient');
 require('dotenv').config();
 
 // Create a new product
@@ -51,8 +51,11 @@ const getAllProducts = asyncHandler(async (req, res) => {
     const products = await Product.find();
 
     // Fetch all categories from Category Service
-    const categoryResponse = await axios.get(`${process.env.CATEGORY_SERVICE_URL}/`);
-    const categories = categoryResponse.data;
+    // const categoryResponse = await axios.get(`${process.env.CATEGORY_SERVICE_URL}/`);
+    // const categories = categoryResponse.data;
+
+    const categories = await getAllCategories();
+    console.log(categories);
 
     const categoryMap = new Map();
     categories.forEach(category => {

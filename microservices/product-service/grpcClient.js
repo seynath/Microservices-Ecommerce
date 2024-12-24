@@ -24,7 +24,7 @@ const client = new categoryProto.CategoryService(
 // Fetch all categories via gRPC
 const getAllCategories = async () => {
   return new Promise((resolve, reject) => {
-    grpcClient.getAllCategories({}, (error, response) => {
+    client.getAllCategories({}, (error, response) => {
       if (error) {
         return reject(error);
       }
@@ -32,6 +32,7 @@ const getAllCategories = async () => {
     });
   });
 };
+
 
 const getAllSubCategories = async () => {
   return new Promise((resolve, reject) => {
@@ -43,4 +44,15 @@ const getAllSubCategories = async () => {
     });
   });
 };
-module.exports = { getAllCategories, getAllSubCategories };
+
+const getCategoryById = (categoryId) => {
+  return new Promise((resolve, reject) => {
+    client.GetCategory({ categoryId }, (error, response) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve(response.category);
+    });
+  });
+};
+module.exports = { getAllCategories, getAllSubCategories, getCategoryById };
