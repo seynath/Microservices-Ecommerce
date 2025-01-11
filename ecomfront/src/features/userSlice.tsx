@@ -39,7 +39,7 @@ export const loginUser = createAsyncThunk(
       console.log("aaaaawa")
 
       const response = await axios.post(`${user_service_url}/login`, values, {
-        withCredentials: true, // Ensures cookies are sent with the request
+        // withCredentials: true, // Ensures cookies are sent with the request
       });
       console.log(response)
       return response.data ;

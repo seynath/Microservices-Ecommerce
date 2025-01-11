@@ -1,7 +1,11 @@
 const grpc = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
 const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config();
 
+
+const CATEGORY_GRPC_ADDRESS = process.env.CATEGORY_GRPC_ADDRESS;
 // Load the .proto file (this file is used to define the gRPC services)
 const PROTO_PATH = path.join(__dirname, 'proto/category.proto');
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
@@ -16,7 +20,8 @@ const categoryProto = grpc.loadPackageDefinition(packageDefinition).category;
 
 // Create a gRPC client for CategoryService
 const client = new categoryProto.CategoryService(
-  'localhost:50051', // Address of the gRPC server in the Category service
+  CATEGORY_GRPC_ADDRESS, // Address of the gRPC server in the Category service
+  // 'localhost:50051', // Address of the gRPC server in the Category service
   grpc.credentials.createInsecure()
 );
 

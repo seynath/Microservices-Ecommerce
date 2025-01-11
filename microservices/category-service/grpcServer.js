@@ -2,6 +2,8 @@ const grpc = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
 const Category = require('./models/Category'); // Your Category model
 const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config();
 
 // Load the .proto file
 const PROTO_PATH = path.join(__dirname, 'proto/category.proto');
@@ -100,7 +102,7 @@ const startGrpcServer = () => {
     GetAllCategories: getAllCategories,
   });
 
-  const port = '50051';
+  const port = process.env.CATEGORY_GRPC_ADDRESS_PORT || 50051;
   server.bindAsync(`0.0.0.0:${port}`, grpc.ServerCredentials.createInsecure(), (err, port) => {
     if (err) {
       console.error(`Server error: ${err.message}`);

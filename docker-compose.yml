@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  category-service:
+    build:
+      context: ./microservices/category-service
+      dockerfile: Dockerfile
+    container_name: category-service
+    ports:
+      - "6002:6002"
+      - "50051:50051"
+    environment:
+      - PORT=6002
+      - MONGO_URI=mongodb+srv://ecommerce:sH32wUZJLkiY6aGQ@cluster0.muua9it.mongodb.net/category?retryWrites=true&w=majority&appName=Cluster0
+      - CATEGORY_GRPC_PORT=50051
+    networks:
+      - ecommerce-network
+
+  product-service:
+    build:
+      context: ./microservices/product-service
+      dockerfile: Dockerfile
+    container_name: product-service
+    ports:
+      - "6003:6003"
+    environment:
+      - PORT=6003
+      - MONGO_URI=mongodb+srv://ecommerce:sH32wUZJLkiY6aGQ@cluster0.muua9it.mongodb.net/product?retryWrites=true&w=majority&appName=Cluster0
+      - CATEGORY_SERVICE_URL=http://category-service:6002/category
+      - CATEGORY_GRPC_ADDRESS=category-service:50051
+    depends_on:
+      - category-service
+    networks:
+      - ecommerce-network
+
+  ecomui:
+    build:
+      context: ./ecomfront
+      dockerfile: Dockerfile
+    container_name: ecomui
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_USER_SERVICE_URL=http://localhost:6001/user
+      - VITE_CATEGORY_SERVICE_URL=http://category-service:6002/category
+      - VITE_PRODUCT_SERVICE_URL=http://product-service:6003/product
+      - VITE_CART_SERVICE_URL=http://localhost:6004/cart
+      - VITE_ORDER_SERVICE_URL=http://localhost:8000/order
+    networks:
+      - ecommerce-network
+
+networks:
+  ecommerce-network:
+    driver: bridge

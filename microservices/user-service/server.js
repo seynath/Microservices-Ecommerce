@@ -22,16 +22,20 @@ app.use(helmet()); // Security headers
 //   allowedHeaders: ['Content-Type', 'Authorization'],
 //   credentials: true,
 // }));
-// app.use(cors());
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS || 'http://localhost:5173', // Specify the client origin here
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // Allow credentials (cookies)
-}));
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
+// app.use(cors({
+//   // origin: process.env.ALLOWED_ORIGINS || 'http://localhost:5173', // Specify the client origin here
+//   origin: '*',
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   credentials: true, // Allow credentials (cookies)
+//   withCredentials: true,
+// }));
+// allow all origins
+// app.use(cors())
+
 app.use(cookieParser());
 app.use(morgan('dev')); // Logging
 
