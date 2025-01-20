@@ -11,6 +11,10 @@ const morgan = require('morgan');
 const app = express();
 app.use(cors());
 app.use(morgan('dev'));
+const amqp = require('amqplib');
+
+const connectRabbitMQ = require('./config/rabbitMQ')
+connectRabbitMQ();
 
 // Connect to MongoDB
 connectDB();

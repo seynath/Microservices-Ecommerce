@@ -4,99 +4,130 @@ from . import models, schemas
 import requests
 from fastapi import HTTPException
 import os
+import pika
+import json
 
 PRODUCT_SERVICE_URL = os.getenv("PRODUCT_SERVICE_URL")
 CART_SERVICE_URL = os.getenv("CART_SERVICE_URL")
+
+def publish_to_rabbitmq(queue_name: str, message: dict):
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+    
+    # Declare the queue
+    channel.queue_declare(queue=queue_name, durable=True)
+    
+    # Publish the message
+    channel.basic_publish(
+        exchange='',
+        routing_key=queue_name,
+        body=json.dumps(message),
+        properties=pika.BasicProperties(
+            delivery_mode=2  # Make message persistent
+        )
+    )
+    connection.close()
+
 def create_order(db: Session, order_data: schemas.OrderCreate):
 #    print("aaaawa")
-   not_available_products = []
-   available_not_sufficient_products = []
+    not_available_products = []
+    available_not_sufficient_products = []
 
-   for item in order_data.order_items:
-       availability = check_product_availability(item.product_id, item.variant_id, item.quantity, not_available_products,available_not_sufficient_products, order_data.user_id, item)
-       if (availability == False):
-              order_data.order_items.remove(item)
-              continue
-    #    deduct the quantity from the product
-       updateStatus = deduct_product_quantity(item.product_id, item.variant_id, item.quantity)
-       if (updateStatus == False):
-           #    remove the item from the order and continue to the next item
-              order_data.order_items.remove(item)
-              continue
+    for item in order_data.order_items:
+        availability = check_product_availability(item.product_id, item.variant_id, item.quantity, not_available_products,available_not_sufficient_products, order_data.user_id, item)
+        if (availability == False):
+                order_data.order_items.remove(item)
+                continue
+        #    deduct the quantity from the product
+        # updateStatus = deduct_product_quantity(item.product_id, item.variant_id, item.quantity)
+        # if (updateStatus == False):
+        #     #    remove the item from the order and continue to the next item
+        #         order_data.order_items.remove(item)
+        #         continue
     # if len(not_available_products) > 0:
-   if(len(order_data.order_items) == 0):
-         raise HTTPException(status_code=400, detail={"message": "All products not available", "product_ids": not_available_products})
          # return False
-   if len(not_available_products ) > 0:
-       raise HTTPException(status_code=400, detail={"message": "Products not available", "product_ids": not_available_products})
-   
-   if len(available_not_sufficient_products) > 0:
-       raise HTTPException(status_code=400, detail={"message": "Products not available for sufficient quantity", "product_ids": available_not_sufficient_products})
-   
+    if len(not_available_products ) > 0:
+        raise HTTPException(status_code=400, detail={"message": "Some Products not available", "product_ids": not_available_products})
+    
+    if len(available_not_sufficient_products) > 0:
+        raise HTTPException(status_code=400, detail={"message": "Products not available for sufficient quantity", "product_ids": available_not_sufficient_products})
+    if(len(order_data.order_items) == 0):
+            raise HTTPException(status_code=400, detail={"message": "All products not available", "product_ids": not_available_products})
+    
 
-   # Create the main order entry.
-   order = models.Order(
+    # Create the main order entry.
+    order = models.Order(
 
-        user_id=order_data.user_id,
-        first_name=order_data.first_name,
-        last_name=order_data.last_name,
-        email=order_data.email,
-        total_price=sum(item.total_price for item in order_data.order_items),
-        payment_method=order_data.payment_method,
-        status="Pending"
-   )
-   
-   db.add(order)
-   db.commit()
-   db.refresh(order)
+            user_id=order_data.user_id,
+            first_name=order_data.first_name,
+            last_name=order_data.last_name,
+            email=order_data.email,
+            total_price=sum(item.total_price for item in order_data.order_items),
+            payment_method=order_data.payment_method,
+            status="Pending"
+    )
+    
+    db.add(order)
+    db.commit()
+    db.refresh(order)
 
-   # Add each order item to the database.
-   for item in order_data.order_items:
-        order_item = models.OrderItem(
+    # Add each order item to the database.
+    for item in order_data.order_items:
+            order_item = models.OrderItem(
+                order_id=order.id,
+                product_id=item.product_id,
+                product_name=item.product_name,
+                image=item.image,
+                total_price=item.total_price,
+                variant_id=item.variant_id,
+                quantity=item.quantity,
+                price=item.price,
+                attributes=item.attributes  # Store dynamic attributes for each item
+            )
+            db.add(order_item)
+
+    db.commit()
+
+    # Save shipping address (if needed).
+    shipping_address = models.ShippingAddress(
             order_id=order.id,
-            product_id=item.product_id,
-            product_name=item.product_name,
-            image=item.image,
-            total_price=item.total_price,
-            variant_id=item.variant_id,
-            quantity=item.quantity,
-            price=item.price,
-            attributes=item.attributes  # Store dynamic attributes for each item
-        )
-        db.add(order_item)
+            address=order_data.shipping_address.address,
+            city=order_data.shipping_address.city,
+            state=order_data.shipping_address.state,
+            country=order_data.shipping_address.country,
+            zip=order_data.shipping_address.zip,
+            phone=order_data.shipping_address.phone,
+    )
+    
+    db.add(shipping_address)
 
-   db.commit()
-
-   # Save shipping address (if needed).
-   shipping_address = models.ShippingAddress(
+    # Save billing address (if needed).
+    billing_address = models.BillingAddress(
         order_id=order.id,
-        address=order_data.shipping_address.address,
-        city=order_data.shipping_address.city,
-        state=order_data.shipping_address.state,
-        country=order_data.shipping_address.country,
-        zip=order_data.shipping_address.zip,
-        phone=order_data.shipping_address.phone,
-   )
+        first_name=order_data.billing_address.first_name,
+        last_name=order_data.billing_address.last_name,
+        address=order_data.billing_address.address,
+        city=order_data.billing_address.city,
+        state=order_data.billing_address.state,
+        country=order_data.billing_address.country,
+        zip=order_data.billing_address.zip,
+        phone=order_data.billing_address.phone,
+    )
    
-   db.add(shipping_address)
+    db.add(billing_address)
+    db.commit()
 
-   # Save billing address (if needed).
-   billing_address = models.BillingAddress(
-       order_id=order.id,
-       first_name=order_data.billing_address.first_name,
-       last_name=order_data.billing_address.last_name,
-       address=order_data.billing_address.address,
-       city=order_data.billing_address.city,
-       state=order_data.billing_address.state,
-       country=order_data.billing_address.country,
-       zip=order_data.billing_address.zip,
-       phone=order_data.billing_address.phone,
-   )
+#    deduct product quantity
+    for item in order_data.order_items:
+        message = {
+            "product_id": item.product_id,
+            "variant_id": item.variant_id,
+            "quantity": item.quantity
+        }
+        publish_to_rabbitmq("deduct_quantity", message)
+
    
-   db.add(billing_address)
-   db.commit()
-   
-   return order
+    return order
 
 def check_product_availability(product_id: str, variant_id: str, quantity: int, not_available_products: list,available_not_sufficient_products: list, user_id: str, item: dict):
     url = f"{PRODUCT_SERVICE_URL}/check-availability/{product_id}?quantity={quantity}&variant_id={variant_id}"
@@ -121,14 +152,17 @@ def check_product_availability(product_id: str, variant_id: str, quantity: int, 
         cart_url = f"{CART_SERVICE_URL}/{userId}" 
 
         if int(requestedQuantity) > int(availabileQuantity) and int(availabileQuantity) > 0:
+            print("==============================================================")
+            print("==============================================================")
+            print("==============================================================")
             available_not_sufficient_products.append(
                 {"product_id": product_id, 
                 "variant_id": variant_id, 
                 "requestedQuantity": requestedQuantity, 
                 "availableQuantity": availabileQuantity,
-                "product_name": item.get("product_name"), 
-                "image": item.get("image"), 
-                "attributes": item.get("attributes"),
+                "product_name": item.product_name, 
+                "image": item.image, 
+                "attributes": item.attributes,
                 "price": item.price,
                 "message": "Product not available"
                 })
@@ -142,6 +176,7 @@ def check_product_availability(product_id: str, variant_id: str, quantity: int, 
             }
             response = requests.put(cart_url, json=body_data)
             print(response.json())
+       
 
         
 
@@ -164,7 +199,7 @@ def check_product_availability(product_id: str, variant_id: str, quantity: int, 
             body_data = {
                  "productId": product_id,
                  "variantId": variant_id,
-                 "quantity": quantity,
+                 "quantity": availabileQuantity,
                  "price": price
             }
             response = requests.put(cart_url, json=body_data)
@@ -179,7 +214,7 @@ def check_product_availability(product_id: str, variant_id: str, quantity: int, 
     return True
 
 
-def deduct_product_quantity(product_id: str, variant_id: str, quantity: int):
+def deduct_product_quantity(product_id: str, variant_id: str, quantity: int) -> bool:
     url = f"{PRODUCT_SERVICE_URL}/deduct-quantity"  # Fixed f-string
     response = requests.post(url, json={"product_id": product_id, "variant_id": variant_id, "quantity": quantity})
     

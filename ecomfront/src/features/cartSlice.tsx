@@ -104,7 +104,7 @@ export const emptyCart = createAsyncThunk(
       if (!userId) {
         throw new Error("User not logged in");
       }
-      console.log(values);
+      // console.log(values);
       const response = await axios.delete(`${cart_service_url}/empty/${userId}`);
       console.log(response.data);
       return response.data;

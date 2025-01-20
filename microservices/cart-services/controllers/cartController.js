@@ -33,7 +33,14 @@ const addToCart = async (req, res) => {
   //   basePrice,
   //   userId,
   // });
-  console.log(variantId);
+  // console.log("====================================");
+  // console.log("====================================");
+  // console.log("====================================");
+  // console.log("====================================");
+  // console.log("====================================");
+  // console.log(quantity);
+  // console.log("====================================");
+  // console.log("====================================");
   
 
 
@@ -175,7 +182,14 @@ const updateCartItem = async (req, res) => {
 
     // Check if the requested quantity is available in stock
     if (variant.stock_quantity < quantity) {
-      return res.status(400).json({ error: 'Requested quantity exceeds available stock' });
+      // update the quantity of the cart 
+      if(variant.stock_quantity > 0){
+        quantity = variant.stock_quantity
+      }else{
+        
+
+        return res.status(400).json({ error: 'Requested quantity exceeds available stock' , success: false});
+      }
     }
 
     // Fetch the current cart from Redis

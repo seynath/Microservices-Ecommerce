@@ -21,10 +21,7 @@ export const createOrder = createAsyncThunk(
       }
 
       console.log(values);
-      const response = await axios.post(
-        `${order_service_url}/`,
-        values
-      );
+      const response = await axios.post(`${order_service_url}/`, values);
 
       console.log(response);
       return response.data;
@@ -57,7 +54,7 @@ export const getAllOrders = createAsyncThunk(
         }
       }
 
-      const response = await axios.get(`${order_service_url}/${user_id}` );
+      const response = await axios.get(`${order_service_url}/${user_id}`);
       // console.log(response);
       return response.data;
     } catch (error: unknown) {
@@ -71,8 +68,6 @@ export const getAllOrders = createAsyncThunk(
     }
   }
 );
-
-
 
 // export const removeFromCart = createAsyncThunk(
 //   "cart/removeFromCart",
@@ -190,10 +185,7 @@ export const orderSlice = createSlice({
           "message" in action.payload
             ? (action.payload as { message: string }).message
             : "An Server error occurred";
-      })
-   
-      
-      ;
+      });
   },
 });
 

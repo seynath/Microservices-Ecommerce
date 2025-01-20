@@ -2,12 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {  Modal } from "flowbite-react";
+import { Modal } from "flowbite-react";
 
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@/components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectTrigger,
@@ -16,7 +13,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Link , useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { emptyCart, getCart } from "@/features/cartSlice";
@@ -30,10 +27,9 @@ export default function Checkout() {
   const [sameAsShipping, setSameAsShipping] = useState(false);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [availableNotSufficientProducts, setAvailableNotSufficientProducts] = useState([]);
+  const [availableNotSufficientProducts, setAvailableNotSufficientProducts] =
+    useState([]);
   const navigate = useNavigate();
-
-
 
   useEffect(() => {
     dispatch(getCart());
@@ -76,7 +72,7 @@ export default function Checkout() {
     cvc: "",
   });
 
-  console.log(cart)
+  console.log(cart);
   useEffect(() => {
     const updatedorder_items = cart?.items?.map((item) => ({
       product_id: item.productId,
@@ -117,11 +113,12 @@ export default function Checkout() {
 
   //   // API call to place order
   // };
+
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-  
     // Copy shipping address to billing address if sameAsShipping is true
     let updatedOrderDetails = { ...orderDetails };
     if (sameAsShipping) {
@@ -130,15 +127,17 @@ export default function Checkout() {
         billing_address: { ...orderDetails.shipping_address }, // Copy shipping to billing
       };
     }
-  
+
     console.log("Order Details", updatedOrderDetails); // Updated order details to include billing
     console.log("Card Details", cardDetails);
-  
+
     // Dispatch the order with updatedOrderDetails instead of orderDetails
-    dispatch(createOrder(updatedOrderDetails))
+    await dispatch(createOrder(updatedOrderDetails))
       .unwrap()
-      .then((response) => {
+      .then(async (response) => {
         console.log("Order placed successfully", response);
+        // emptyCart();
+        // navigate('/order'); // Redirect to order success page
         // dispatch(emptyCart()).unwrap()
         // .then((response)=>{
         //   console.log(response)
@@ -150,32 +149,55 @@ export default function Checkout() {
         //   }
         // })
 
-
-
         // if (orderStatus) {
 
         //   // Redirect to order success page
         //   // history.push(`/order/${response.data.id}`);
         // }
-      }).catch((error) => {
+      })
+      .catch((error: any) => {
         console.log("Order failed", error);
-        if(error.detail.product_ids.length > 0 && error.detail.message === "Products not available"){
-          console.log("wertyuiop")
+        if (
+          error.detail.product_ids.length > 0 &&
+          error.detail.message === "Some Products not available"
+        ) {
+          console.log("wertyuiop");
           // Display error message for unavailable products with Drawer UI
           error.detail.product_ids.forEach((productId) => {
-          setAvailableNotSufficientProducts((prevProducts) => [...prevProducts, productId]);
-          })
+            setAvailableNotSufficientProducts((prevProducts) => [...prevProducts, productId,
+            ]);
+          });
           // switch (error)
           setOpenModal(true);
           setLoading(false);
-        } else if(error.detail.product_ids.length > 0 && error.detail.message === "Products not available for sufficient quantity"){
+        } else if (
+          error.detail.product_ids.length > 0 &&
+          error.detail.message ===
+            "Products not available for sufficient quantity"
+        ) {
+          console.log("err 1");
+          error.detail.product_ids.forEach((productId) => {
+            setAvailableNotSufficientProducts((prevProducts) => [...prevProducts, productId,
+            ]);
+          });
+          setOpenModal(true);
+          setLoading(false);
 
-           console.log("qwertyuiop")
-        }else if(error.detail.product_ids.length > 0 && error.detail.message === "All products not available"){
- console.log("qwertyuiop")
+        } else if (
+          error.detail.product_ids.length > 0 &&
+          error.detail.message === "All products not available"
+        ) {
+          console.log("err 2");
         }
-      }
-      );
+      });
+
+      dispatch(emptyCart()).unwrap().then(() => {
+        navigate('/order'); // Redirect to order success page
+        console.log("Cart emptied successfully");
+      }).catch((error) => {
+        console.error("Error emptying cart:", error);
+      })
+      setLoading(false);
 
     // dispatch(createOrder(updatedOrderDetails) as Promise<any>)
     // .then((response: any) => {
@@ -200,10 +222,8 @@ export default function Checkout() {
     //   console.log("Order failed", error);
     //   setLoading(false);
     // });
-      // setLoading(false);
-
+    // setLoading(false);
   };
-  
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -220,51 +240,56 @@ export default function Checkout() {
   };
 
   return (
-    <>      <Modal dismissible show={openModal} onClose={() => setOpenModal(false)}>
-    <Modal.Header>These Products Doesn't Have Suffesient Quantity</Modal.Header>
-    <Modal.Body>
-      <div className="space-y-6">
-        {availableNotSufficientProducts && availableNotSufficientProducts.map((product, index) => (
-          <div key={index} className="flex items-center justify-between">
-            <span>
-              <img
-                src={product.image}
-                width={30}
-                height={30}
-                className="rounded-xl"
-              />
-            </span>
-            <span>
-              {product.product_name} 
-            </span>
-            <div>
-              {
-                product.attributes && product.attributes.map((attr) => (
-                  <span className="block text-gray-500">{attr.key}: {attr.value}</span>
-                ))
-              }
-
-            </div>
-            <div>
-              <span>Available Quantity: </span>
-              <span><strong>{product.availableQuantity}</strong></span>
-            </div>
-            <span>${(product.price).toFixed(2)}</span>
+    <>
+      {" "}
+      <Modal dismissible show={openModal} onClose={() => setOpenModal(false)}>
+        <Modal.Header>
+          These Products Doesn't Have Suffesient Quantity
+        </Modal.Header>
+        <Modal.Body>
+          <div className="space-y-6">
+            {availableNotSufficientProducts &&
+              availableNotSufficientProducts.map((product, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span>
+                    <img
+                      src={product.image}
+                      width={30}
+                      height={30}
+                      className="rounded-xl"
+                    />
+                  </span>
+                  <span>{product.product_name}</span>
+                  <div>
+                    {product.attributes &&
+                      product.attributes.map((attr) => (
+                        <span className="block text-gray-500">
+                          {attr.key}: {attr.value}
+                        </span>
+                      ))}
+                  </div>
+                  <div>
+                    <span>Available Quantity: </span>
+                    <span>
+                      <strong>{product.availableQuantity}</strong>
+                    </span>
+                  </div>
+                  <span>${product.price.toFixed(2)}</span>
+                </div>
+              ))}
           </div>
-        ))}
-      </div>
-    </Modal.Body>
-    <Modal.Footer>
-      <Button onClick={() => setOpenModal(false)}>I accept</Button>
-      <Button color="gray" onClick={() => setOpenModal(false)}>
-        Decline
-      </Button>
-    </Modal.Footer>
-  </Modal>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={() => setOpenModal(false)}>I accept</Button>
+          <Button color="gray" onClick={() => {setOpenModal(false); navigate('/cart')}}>
+            Go To Cart
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <form onSubmit={handlePlaceOrder}>
         <main className="container  my-8 grid grid-cols-1 gap-8 px-4 md:grid-cols-3 md:gap-12">
           <section className="col-span-2 space-y-8">
-          <Button onClick={() => setOpenModal(true)}>Toggle modal</Button>
+            <Button onClick={() => setOpenModal(true)}>Toggle modal</Button>
 
             <div>
               <h2 className="text-lg font-semibold">Shipping Details</h2>
@@ -740,24 +765,22 @@ export default function Checkout() {
             </div>
             <div className="space-y-4">
               {loading ? (
-                    //  <l-ring  color="coral"></l-ring>
-                    <div className="flex justify-center">
-
-                    <l-reuleaux
-                      size="37"
-                      stroke="5"
-                      stroke-length="0.15"
-                      bg-opacity="0.1"
-                      speed="1.2"
-                      color="black"
-                      ></l-reuleaux>
-                      </div>
-                  ) : (
-              <Button size="lg" type="submit" className="w-full">
-                Place Order
-              </Button>
-                   
-                  )}
+                //  <l-ring  color="coral"></l-ring>
+                <div className="flex justify-center">
+                  <l-reuleaux
+                    size="37"
+                    stroke="5"
+                    stroke-length="0.15"
+                    bg-opacity="0.1"
+                    speed="1.2"
+                    color="black"
+                  ></l-reuleaux>
+                </div>
+              ) : (
+                <Button size="lg" type="submit" className="w-full">
+                  Place Order
+                </Button>
+              )}
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 By placing your order, you agree to our{" "}
                 <Link to="#" className="underline" prefetch={false}>
@@ -773,7 +796,6 @@ export default function Checkout() {
           </section>
         </main>
       </form>
-
     </>
   );
 }
@@ -839,9 +861,6 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-
-
-
 // import { Button } from "@/components/ui/button"
 // import { Label } from "@/components/ui/label"
 // import { Input } from "@/components/ui/input"
@@ -853,7 +872,6 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 // import { useEffect, useState } from "react"
 // import { useSelector, useDispatch } from "react-redux"
 // import { getCart } from "@/features/cartSlice"
-
 
 // export default function Component() {
 //   const dispatch = useDispatch();
@@ -910,7 +928,7 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 //       ...prevOrderDetails,
 //       userId: user?.id,
 //     }));
-  
+
 //     console.log("Updated Order Items", updatedorder_items)
 //     setOrderDetails((prevOrderDetails) => ({
 //       ...prevOrderDetails,
@@ -929,7 +947,6 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 //     setSubtotal(subtotal);
 //     setTotal(subtotal + shipping);
 //   };
-  
 
 //   const handlePlaceOrder =  (e) => {
 //     e.preventDefault();
@@ -940,11 +957,9 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 
 //   }
 
-
-
 //   return (
 //     <>
-  
+
 //         <form onSubmit={handlePlaceOrder}>
 
 //       <main className="container mx-auto my-8 grid grid-cols-1 gap-8 px-4 md:grid-cols-3 md:gap-12">
@@ -955,7 +970,7 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 //               <div className="grid grid-cols-2 gap-4">
 //                 <div className="space-y-2">
 //                   <Label htmlFor="first_name">First Name</Label>
-//                   <Input id="first_name" placeholder="John" 
+//                   <Input id="first_name" placeholder="John"
 //                   value={orderDetails.first_name}
 //                   onChange={(e) => setOrderDetails({...orderDetails, first_name: e.target.value})}
 //                   required={true}
@@ -963,7 +978,7 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 //                 </div>
 //                 <div className="space-y-2">
 //                   <Label htmlFor="last_name">Last Name</Label>
-//                   <Input id="last_name" placeholder="Doe" 
+//                   <Input id="last_name" placeholder="Doe"
 //                   value={orderDetails.last_name}
 //                   onChange={(e) => setOrderDetails({...orderDetails, last_name: e.target.value})}
 //                   />
@@ -1016,7 +1031,7 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 //                   onChange={(e) => setOrderDetails({...orderDetails, country: e.target.value})}
 //                   />
 //                 </div>
-          
+
 //               </div>
 //             </form>
 //           </div>
@@ -1058,7 +1073,7 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 //               <div className="grid gap-4">
 //                 <div className="space-y-2">
 //                   <Label htmlFor="cardNumber">Card Number</Label>
-//                   <Input id="cardNumber" placeholder="4111 1111 1111 1111" 
+//                   <Input id="cardNumber" placeholder="4111 1111 1111 1111"
 //                   value={cardDetails.cardNumber}
 //                   onChange={(e) => setCardDetails({...cardDetails, cardNumber: e.target.value})}
 //                   />
@@ -1196,7 +1211,6 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 //   )
 // }
 
-
 // function DollarSignIcon(props) {
 //   return (
 //     <svg
@@ -1217,7 +1231,6 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 //   )
 // }
 
-
 // function MountainIcon(props) {
 //   return (
 //     <svg
@@ -1236,7 +1249,6 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 //     </svg>
 //   )
 // }
-
 
 // function WalletCardsIcon(props) {
 //   return (
@@ -1258,7 +1270,6 @@ function WalletCardsIcon(props: React.SVGProps<SVGSVGElement>) {
 //     </svg>
 //   )
 // }
-
 
 // function XIcon(props) {
 //   return (

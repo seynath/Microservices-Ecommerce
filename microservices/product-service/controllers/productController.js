@@ -176,12 +176,12 @@ const checkProductAvailability = asyncHandler(async (req, res) => {
     }
 
     if (variant.stock_quantity < quantity) {
-      res.status(200).json({ error: 'Insufficient stock quantity123' , product_id, variant_id, requestedQuantity: quantity, availableQuantity: variant.stock_quantity, price: variant.price });
+      res.status(200).json({ error: 'Insufficient stock quantity, not 0' , product_id, variant_id, requestedQuantity: quantity, availableQuantity: variant.stock_quantity, price: variant.price, available: false });
       return;
     }
   } else {
     if (product.stock_quantity < quantity) {
-      res.status(200).json({ error: 'Insufficient stock quantity' });
+      res.status(200).json({ error: 'Insufficient stock quantity, 0 Quantity' });
       return;
     }
   }
@@ -224,6 +224,38 @@ const decreaseQuantity = asyncHandler(async (req, res) => {
   res.status(200).json({ message: 'Stock quantity updated successfully' });
 });
 
+const decreaseQuantityFromQueue = async (product_id, variant_id, quantity) => {
+
+  const product = await Product.findById(product_id);
+  if (!product) {
+    return false;
+  }
+
+  if (product.variants && product.variants.length > 0) {
+    const variant = product.variants.find(variant => variant._id == variant_id);
+    if (!variant) {
+      return false;
+    }
+
+    if (variant.stock_quantity < quantity) {
+      return false;
+    }
+
+    variant.stock_quantity -= quantity;
+  } else {
+    if (product.stock_quantity < quantity) {
+      return false;
+    }
+
+    product.stock_quantity -= quantity;
+  }
+
+  await product.save();
+  return true;
+
+};
+
+
 module.exports = {
   createProduct,
   getAllProducts,
@@ -232,6 +264,7 @@ module.exports = {
   deleteProduct,
   checkProductAvailability,
   decreaseQuantity,
+  decreaseQuantityFromQueue
 };
 
 

@@ -34,7 +34,7 @@ CMD ["nginx", "-g", "daemon off;"]
 
 
 # docker build \
-#   -t ecomui:latest \
+#   -t ecomui:v1 \
 #   --build-arg NODE_ENV=development \
 #   --build-arg VITE_USER_SERVICE_URL="http://localhost:6001/user" \
 #   --build-arg VITE_CATEGORY_SERVICE_URL="http://localhost:6002/category" \
@@ -43,4 +43,4 @@ CMD ["nginx", "-g", "daemon off;"]
 #   --build-arg VITE_ORDER_SERVICE_URL="http://localhost:8000/order" \
 #   .
 
-  # docker run -p 80:80 ecomui:latest
+  # docker run -p 9091:80 ecomui:v1
