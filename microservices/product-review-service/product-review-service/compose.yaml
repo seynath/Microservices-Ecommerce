@@ -1,0 +1,6 @@
+﻿services:
+  product-review-service:
+    image: product-review-service
+    build:
+      context: .
+      dockerfile: product-review-service/Dockerfile
