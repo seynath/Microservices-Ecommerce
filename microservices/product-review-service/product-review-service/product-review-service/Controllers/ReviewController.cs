@@ -12,10 +12,12 @@ namespace product_review_service.Controllers;
 public class ReviewController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly HttpClient _httpClient;
     
-    public ReviewController(ApplicationDbContext dbContext)
+    public ReviewController(ApplicationDbContext dbContext, HttpClient httpClient)
     {
         _dbContext = dbContext;
+        _httpClient = httpClient;
     }
     
 
@@ -42,25 +44,49 @@ public class ReviewController : ControllerBase
     }
     
     [HttpPost]
-    public IActionResult AddReview(AddReviewDTO addReviewDto)
+    // [Route("{orderId}")]
+    public async Task<IActionResult> AddReview([FromBody]AddReviewDTO addReviewDto)
     {
+        Console.WriteLine("/////////////////////////////////////////////");
+        Console.WriteLine(addReviewDto.OrderId);
+        Console.WriteLine("/////////////////////////////////////////////");
+        var orderServiceUrl = $"http://localhost:8000/order/order_id/{addReviewDto.OrderId}";
+
+        try
+        {
+        var response = await _httpClient.GetAsync(orderServiceUrl);
+        Console.WriteLine((object)response);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return BadRequest(new { message = response.ReasonPhrase });
+        }
+        
         var reviewEntity = new Review()
         {
             ProductId = addReviewDto.ProductId,
             UserId = addReviewDto.UserId,
             Rating = addReviewDto.Rating,
             ReviewText = addReviewDto.ReviewText,
-
-
+        
+        
         };
         _dbContext.Reviews.Add(reviewEntity);
-        _dbContext.SaveChanges();
+        // _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
         return Ok(reviewEntity);
-                
+
+        }catch(Exception e)
+        {
+         
+            // return BadRequest(new { message = e.Message });
+            return StatusCode(500, new { message = "Internal Server Error" });
+        }
+        
     }
     
     [HttpPut]
-    // [Route("{id:guid}")]
+    [Route("{id}")]
     public IActionResult UpdateReview( [FromBody] UpdateReviewDTO updateReviewDto)
     {
         // Console.WriteLine("/////////////////////////////////////////////");
@@ -75,6 +101,15 @@ public class ReviewController : ControllerBase
         review.Rating = updateReviewDto.Rating;
         review.ReviewText = updateReviewDto.ReviewText;
         _dbContext.SaveChanges();
+        
+        //update the review in the order service
+        var orderServiceUrl = $"http://localhost:8000/order/update_rating";
+        var orderServiceRequest = new
+        {
+            order_id = review.OrderId,
+            product_id = review.ProductId,
+            Rating = review.Rating
+        };
         return Ok(review);
 
         // return NotFound();

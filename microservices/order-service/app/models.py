@@ -33,6 +33,8 @@ class OrderItem(Base):
     quantity = Column(Integer, nullable=False)
     price = Column(Float, nullable=False)
     attributes = Column(JSON, nullable=True)  # Store dynamic attributes as JSON
+    rating = Column(Integer, nullable=True)
+    rating_text = Column(String, nullable=True)
 
     order = relationship("Order", back_populates="order_items")
 

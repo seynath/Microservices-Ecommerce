@@ -31,6 +31,8 @@ class OrderItemCreate(BaseModel):
     quantity: int
     price: float
     attributes: Optional[List[Dict[str, Any]]] = None  # Store attributes as list of key-value pairs
+    rating: Optional[int] = None
+    rating_text: Optional[str] = None
 
 class OrderCreate(BaseModel):
     user_id: int
@@ -55,9 +57,15 @@ class OrderResponse(BaseModel):
     shipping_address: ShippingAddress
     order_items: List[OrderItemCreate]
 
+
     class Config:
         orm_mode = True
 
+class UpdateRating(BaseModel):
+    order_id: int
+    product_id: str
+    rating: int
+    rating_text: str
 
 
 

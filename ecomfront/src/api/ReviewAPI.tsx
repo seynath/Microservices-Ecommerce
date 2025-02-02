@@ -1,0 +1,1 @@
+export const review_service_url = import.meta.env.VITE_REVIEW_SERVICE_URL;

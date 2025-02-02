@@ -33,7 +33,7 @@ def get_orders_by_user_id(user_id: int, db: Session = Depends(get_db)):
    
    return orders
 
-@router.get("/{order_id}", response_model=schemas.OrderResponse)
+@router.get("/order_id/{order_id}", response_model=schemas.OrderResponse)
 def get_order_by_id(order_id: int, db: Session = Depends(get_db)):
    order = crud.get_order_by_id(db=db, order_id=order_id)
    
@@ -46,6 +46,15 @@ def get_order_by_id(order_id: int, db: Session = Depends(get_db)):
 def update_order_status(order_id: int, status: str, db: Session = Depends(get_db)):
    # Implement status update logic here (if needed).
    pass  # Placeholder for future implementation.
+
+@router.put('/update_rating', response_model=schemas.OrderResponse)
+def update_order_rating(payload: schemas.UpdateRating,db: Session = Depends(get_db)):
+   order = crud.update_order_product_item_rating(db=db, order_id=payload.order_id,product_id=payload.product_id, rating=payload.rating, rating_text=payload.rating_text)
+   
+   if not order:
+      raise HTTPException(status_code=404, detail="Order not found")
+   
+   return order
 
 
 

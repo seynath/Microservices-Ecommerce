@@ -243,6 +243,15 @@ def get_orders_by_user_id(user_id: int, db: Session):
     for order in orders:
         order.shipping_address = db.query(models.ShippingAddress).filter(models.ShippingAddress.order_id == order.id).first()
     return orders
+
+def update_order_product_item_rating(db: Session, order_id: int,product_id:str, rating: int, rating_text: str):
+    order_item = db.query(models.OrderItem).filter(models.OrderItem.order_id == order_id, models.OrderItem.product_id == product_id).first()
+    if order_item:
+        order_item.rating = rating
+        order_item.rating_text = rating_text
+        db.commit()
+        db.refresh(order_item)
+    return order_item
 # from sqlalchemy.orm import Session
 # from . import models, schemas
 
