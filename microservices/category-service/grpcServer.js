@@ -74,13 +74,28 @@ const getSubCategory = async (call, callback) => {
 
 const getAllCategories = async (call, callback) => {
   try {
-    const categories = await Category.find();
-    const categoryList = categories.map((cat) => ({
-      id: cat._id.toString(),
-      name: cat.name,
-      description: cat.description,
-      image: cat.image,
-    }));
+    const categories = await Category.find().populate('subCategories');
+    // console.log(categories);
+    // categories.forEach(category => {
+      //   console.log(category.subCategories);
+      // });
+      
+      const categoryList = categories.map((cat) => ({
+        _id: cat._id.toString(),
+        name: cat.name,
+        description: cat.description,
+        image: cat.image,
+        subCategories: cat.subCategories.map((subCat) => ({
+          _id: subCat._id.toString(),
+          name: subCat.name,
+          description: subCat.description,
+          image: subCat.image,
+        }))
+      }));
+      console.log("//////////");
+      console.log("//////////");
+      console.log(categoryList);
+      console.log("//////////");
     callback(null, { categories: categoryList });
   } catch (error) {
     // callback(error);

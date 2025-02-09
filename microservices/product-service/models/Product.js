@@ -26,6 +26,11 @@ const productSchema = new mongoose.Schema({
   brand: { type: String },
   sold_quantity: { type: Number, default: 0 },
   tags: [{ type: String }], // Tags for recommendation filtering
+  // tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
+  // reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ProductReview' }],
+  ratings: { type: Number, default: 0 }, // Total rating for the product
+  average_rating: { type: Number, default: 0 },
+  // view_count: { type: Number, default: 0 },
   // launch_date: { type: Date },
 
 }, { timestamps: true });

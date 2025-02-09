@@ -50,7 +50,7 @@ public class ReviewController : ControllerBase
         Console.WriteLine("/////////////////////////////////////////////");
         Console.WriteLine(addReviewDto.OrderId);
         Console.WriteLine("/////////////////////////////////////////////");
-        var orderServiceUrl = $"http://localhost:8000/order/order_id/{addReviewDto.OrderId}";
+        var orderServiceUrl = $"http://127.0.0.1:8000/order/order_id/{addReviewDto.OrderId}";
 
         try
         {
@@ -73,7 +73,31 @@ public class ReviewController : ControllerBase
         };
         _dbContext.Reviews.Add(reviewEntity);
         // _dbContext.SaveChanges();
-        await _dbContext.SaveChangesAsync();
+        int changes =  await _dbContext.SaveChangesAsync();
+
+        if (changes > 0)
+        {
+            // await UpdateReviewOnProductService(reviewEntity);
+            var productServiceUrl = $"http://localhost:6003/product/update_rating";
+            var productServiceRequest = new
+            {
+                product_id = reviewEntity.ProductId,
+                rating = reviewEntity.Rating
+            };
+        
+            try
+            {
+                var productResponse = await _httpClient.PutAsJsonAsync(productServiceUrl, productServiceRequest);
+                return !productResponse.IsSuccessStatusCode ? StatusCode(500, new { message = "Internal Server Error in Product Service" }) : Ok(reviewEntity);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return StatusCode(500, new { message = "Internal Server Error in Product Service" });
+            }
+            
+        }
+        
         return Ok(reviewEntity);
 
         }catch(Exception e)
@@ -85,36 +109,78 @@ public class ReviewController : ControllerBase
         
     }
     
-    [HttpPut]
-    [Route("{id}")]
-    public IActionResult UpdateReview( [FromBody] UpdateReviewDTO updateReviewDto)
+    //method to update review on product service
+    [NonAction]
+    public async Task<bool> UpdateReviewOnProductService(Review review)
     {
-        // Console.WriteLine("/////////////////////////////////////////////");
-        // Console.WriteLine(updateReviewDto.ProductId);
-        // Console.WriteLine("/////////////////////////////////////////////");
-        var review = _dbContext.Reviews.Find(updateReviewDto.Id);
-        Console.WriteLine(review);
-        if (review is null)
+        var productServiceUrl = $"http://localhost:6003/product/update_rating";
+        var productServiceRequest = new
         {
-            return NotFound();
-        }
-        review.Rating = updateReviewDto.Rating;
-        review.ReviewText = updateReviewDto.ReviewText;
-        _dbContext.SaveChanges();
-        
-        //update the review in the order service
-        var orderServiceUrl = $"http://localhost:8000/order/update_rating";
-        var orderServiceRequest = new
-        {
-            order_id = review.OrderId,
             product_id = review.ProductId,
-            Rating = review.Rating
+            rating = review.Rating
         };
-        return Ok(review);
-
-        // return NotFound();
+        
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync(productServiceUrl, productServiceRequest);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
     }
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    // [HttpPut]
+    // [Route("{id}")]
+    // public IActionResult UpdateReview( [FromBody] UpdateReviewDTO updateReviewDto)
+    // {
+    //     // Console.WriteLine("/////////////////////////////////////////////");
+    //     // Console.WriteLine(updateReviewDto.ProductId);
+    //     // Console.WriteLine("/////////////////////////////////////////////");
+    //     var review = _dbContext.Reviews.Find(updateReviewDto.Id);
+    //     Console.WriteLine(review);
+    //     if (review is null)
+    //     {
+    //         return NotFound();
+    //     }
+    //     review.Rating = updateReviewDto.Rating;
+    //     review.ReviewText = updateReviewDto.ReviewText;
+    //     _dbContext.SaveChanges();
+    //     
+    //     //update the review in the order service
+    //     var orderServiceUrl = $"http://localhost:8000/order/update_rating";
+    //     var orderServiceRequest = new
+    //     {
+    //         order_id = review.OrderId,
+    //         product_id = review.ProductId,
+    //         Rating = review.Rating
+    //     };
+    //     return Ok(review);
+    //
+    //     // return NotFound();
+    // }
+    //
     [HttpDelete]
     [Route("{id:guid}")]
     public IActionResult DeleteReview(Guid id)

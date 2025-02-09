@@ -15,12 +15,14 @@ def create_order(response: Response, order: schemas.OrderCreate, db: Session = D
     response.status_code = 201
     
     return order_instance
+
 # @router.post("/", response_model=schemas.OrderResponse)
 # def create_order(order: schemas.OrderCreate, db: Session = Depends(get_db)):
 #    return crud.create_order(db=db, order_data=order)
 
 @router.get("/", response_model=List[schemas.OrderResponse])
 def get_orders(db: Session = Depends(get_db)):
+   print("///////////////////.........////////////////")
    return crud.get_orders(db=db)
 
 # get_order_by_id function is added to the order_routes.py file.
@@ -41,6 +43,13 @@ def get_order_by_id(order_id: int, db: Session = Depends(get_db)):
       raise HTTPException(status_code=404, detail="Order not found")
    
    return order
+
+# @router.get("/all", response_model=List[schemas.OrderResponse])
+# def get_all_orders(db: Session = Depends(get_db)):
+#    orders = crud.get_all_orders(db=db)
+#    if not orders:
+#         raise HTTPException(status_code=404, detail="No orders found")
+#    return orders  
 
 @router.put("/{order_id}/status", response_model=schemas.OrderResponse)
 def update_order_status(order_id: int, status: str, db: Session = Depends(get_db)):

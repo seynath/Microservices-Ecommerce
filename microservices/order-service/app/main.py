@@ -23,6 +23,6 @@ Base.metadata.create_all(bind=engine)
 app.include_router(order_routes.router, prefix="/order")
 
 # Test route
-@app.get("/")
-def read_root():
-    return {"message": "Order service is running!"}
+# @app.get("/")
+# def read_root():
+#     return {"message": "Order service is running!"}

@@ -2,11 +2,20 @@ syntax = "proto3";
 
 package category;
 
+message SubCategory {
+  string _id = 1;
+  string name = 2;
+  string description = 3;
+  string image = 4;
+}
+
+
 message Category {
   string _id = 1;
   string name = 2;
   string description = 3;
   string image = 4;
+  repeated SubCategory subCategories = 5;
 }
 
 message GetAllCategoriesRequest {}
@@ -29,7 +38,7 @@ message GetSubCategoryRequest {
 }
 
 message GetSubCategoryResponse {
-  Category subCategory = 1;
+  SubCategory subCategory = 1;
 }
 
 service CategoryService {

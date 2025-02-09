@@ -1,5 +1,5 @@
 # crud.py
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from . import models, schemas
 import requests
 from fastapi import HTTPException
@@ -229,7 +229,6 @@ def deduct_product_quantity(product_id: str, variant_id: str, quantity: int) -> 
     print("Deduction response:", response.json())  # Optional: For debugging
     return True
 
-
 def get_orders(db: Session):
    return db.query(models.Order).all()
 
@@ -252,6 +251,15 @@ def update_order_product_item_rating(db: Session, order_id: int,product_id:str, 
         db.commit()
         db.refresh(order_item)
     return order_item
+
+# def get_all_orders(db: Session):
+#     print("/////////////////////////")
+#     orders =  db.query(models.Order).options(
+#             joinedload(models.Order.order_items),
+#             joinedload(models.Order.shipping_address),
+#             joinedload(models.Order.billing_address)
+#         ).all()
+#     return orders
 # from sqlalchemy.orm import Session
 # from . import models, schemas
 
