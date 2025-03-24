@@ -27,12 +27,12 @@ router.post('/', validateCategory(), handleValidation, createCategory);
 router.get('/', getAllCategories);
 // http://localhost:6003/category/categories/670a78c07ec3621d0c5fb5cf
 router.get('/:id', getCategoryById);
-router.put('/categories/:id', validateCategory(), handleValidation, updateCategory);
-router.delete('/categories/:id', deleteCategory);
+router.put('/:id', validateCategory(), handleValidation, updateCategory);
+router.delete('/:id', deleteCategory);
 router.delete('/delete-image',  async (req, res) => {
   console.log(req.body)
   const { public_id } = req.body;
-
+  
   try {
     const result = await cloudinary.uploader.destroy(public_id);
     if (result.result === 'ok') {

@@ -73,7 +73,12 @@ const ProductTable: React.FC<{
         <img
           src={image}
           alt="product"
-          style={{ width: "50px", height: "50px", objectFit: "cover" }}
+          style={{
+            width: "200px",
+            height: "200px",
+            objectFit: "cover",
+            borderRadius: "10px",
+          }}
         />
       ),
     },
@@ -107,8 +112,20 @@ const ProductTable: React.FC<{
       ) => (
         <ul>
           {variants.map((variant, index) => (
-            <li key={index}>
-              {variant.size} - {variant.color}: ${variant.price} (
+            <li key={index} className="border-b-2 border-gray-200 py-2">
+              <div className="flex-col ">
+                {variant.attributes.map((attribute, index) => (
+                  <div className="flex space-x-2">
+                    <div key={index}>
+                      {attribute.key}
+                      </div>:
+                      <b>
+                    <div>{attribute.value}</div>
+                      </b>
+                  </div>
+                ))}
+              </div>
+              ${variant.price} (
               {variant.stock_quantity} units)
             </li>
           ))}
@@ -121,7 +138,7 @@ const ProductTable: React.FC<{
       dataIndex: "",
       render: (text, record) => (
         // console.log(record),
-        <div className="flex">
+        <div className="flex-col space-y-2">
           <Button
             className="w-20"
             onClick={() => {

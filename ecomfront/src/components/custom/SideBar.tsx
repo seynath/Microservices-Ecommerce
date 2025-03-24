@@ -20,7 +20,7 @@ function SideBar() {
   const handleClose = () => setIsOpen(false);
 
   return (
-    <div className="h-screen  bg-green-400">
+    <div className="h-screen">
       <div className="flex flex-col items-center justify-center left-10">
         <Button onClick={() => setIsOpen(true)}>
         <GiHamburgerMenu />

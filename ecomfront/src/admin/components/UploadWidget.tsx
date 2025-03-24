@@ -36,7 +36,9 @@ const UploadWidget: React.FC<Props> = ({ setImages, images }) => {
 
   return (
     <div>
-      <button onClick={() => widgetRef.current.open()}>Upload</button>
+      <button 
+      type='button'
+      onClick={() => widgetRef.current.open()}>Upload</button>
 
       <div className="image-preview">
         {images.length > 0 &&

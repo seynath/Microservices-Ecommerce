@@ -520,7 +520,9 @@ const Product: React.FC = () => {
     <div>
       <h1>{editProduct}</h1>
       <div className="my-5 flex justify-center  ">
-        <Button onClick={() => setOpenModal(true)}>Add Product</Button>
+        <div className="flex justify-end w-full">
+        <Button onClick={() => setOpenModal(true)}>+ Add Product</Button>
+        </div>
         <Modal
           dismissible
           show={openModal}
@@ -727,9 +729,12 @@ const Product: React.FC = () => {
               </div>
 
               {/* Dynamic Attribute Management */}
+              {
+                editProduct === false && (
+
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-2">
-                  Define Attributes
+                  Add All Attributes
                 </h3>
                 <input
                   type="text"
@@ -741,7 +746,7 @@ const Product: React.FC = () => {
                 <Button onClick={handleAddNewAttribute}>Add Attribute</Button>
                 {availableAttributes.map((attr) => (
                   <div key={attr.name} className="mt-4">
-                    <h4>{attr.name} Values</h4>
+                    <h4>Add values in <b>{attr.name}</b></h4>
                     <input
                       type="text"
                       placeholder={`Value for ${attr.name}`}
@@ -750,7 +755,7 @@ const Product: React.FC = () => {
                       className="mr-2 p-2 border rounded"
                     />
                     <Button onClick={() => handleAddAttributeValue(attr.name)}>
-                      Add Value
+                      + Add
                     </Button>
                     <div>
                       {attr.values.map((value) => (
@@ -765,8 +770,10 @@ const Product: React.FC = () => {
                   </div>
                 ))}
               </div>
+                )
+              }
 
-              {editProduct && editProduct ? (
+              {/* {editProduct && editProduct ? (
                 <div>
                   <h3>Add Define New Attributes in Product Edit</h3>
                   <input
@@ -811,7 +818,7 @@ const Product: React.FC = () => {
                 </div>
               ) : (
                 <div>Mode is not editing</div>
-              )}
+              )} */}
 
               {/* Attribute Selection for Variants */}
 
@@ -831,10 +838,9 @@ const Product: React.FC = () => {
                 ))}
               </div> */}
               <div className="mb-6">
-                <div>yyyyyyyyyyyyyyyyyy</div>
                 {editProduct && editProduct ? (
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">
+                    {/* <h3 className="text-lg font-semibold mb-2">
                       Edit Attributes for Variations
                     </h3>
                     {editAvailableAttributes.map((attr) => (
@@ -848,7 +854,7 @@ const Product: React.FC = () => {
                         />
                         {attr.name}
                       </label>
-                    ))}
+                    ))} */}
                   </div>
                 ) : (
                   <div>
@@ -870,7 +876,6 @@ const Product: React.FC = () => {
                     </div>
                   </div>
                 )}
-                <div>yyyyyyyyyyyyyyyyyy</div>
               </div>
 
               {/* Variant Combination Inputs */}

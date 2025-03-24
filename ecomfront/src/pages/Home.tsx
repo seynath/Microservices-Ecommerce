@@ -1,5 +1,6 @@
 import HeroSection from "@/components/custom/HeroSection";
 import ProductGrid from "@/components/custom/ProductGrid";
+import Newsletter from "@/components/custom/Newsletter";
 
 export default function Home() {
   
@@ -8,6 +9,7 @@ export default function Home() {
     <>
       <HeroSection />
       <ProductGrid />
+      <Newsletter />
     
     </>
   )

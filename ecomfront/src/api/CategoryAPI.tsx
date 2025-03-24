@@ -1,4 +1,4 @@
-const category_service_url = import.meta.env.VITE_CATEGORY_SERVICE_URL;
+export const category_service_url = import.meta.env.VITE_CATEGORY_SERVICE_URL;
 import axios from "axios";
 
 
@@ -34,6 +34,31 @@ export const getCategories = async (): Promise<object> => {
     return response.data;
   } catch (error) {
     console.error("Error fetching categories:", error);
+    throw error;
+  }
+}
+
+
+export const updateCategory = async (id: string, category: object): Promise<object> => {
+  try {
+    console.log("Updating category:", category);
+    const response = await axios.put(`${category_service_url}/${id}`, category);
+    console.log("Category updated:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating category:", error);
+    throw error;
+  }
+}
+
+export const deleteCategory = async (id: string): Promise<object> => {
+  try {
+    console.log("Deleting category:", id);
+    const response = await axios.delete(`${category_service_url}/${id}`);
+    console.log("Category deleted:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting category:", error);
     throw error;
   }
 }

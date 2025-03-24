@@ -246,7 +246,7 @@ export default function Order() {
             </div>
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="password" value="Your password" />
+                <Label htmlFor="rating" value="Add a Short Description" />
               </div>
               <TextArea rows={4} placeholder="Write a Review" value={rateItem.ReviewText} onChange={(e) => setRateItem({...rateItem, ReviewText: e.target.value})}/>
 

@@ -136,7 +136,87 @@ const getAllProducts = asyncHandler(async (req, res) => {
   }
 });
 
+// const getProductsByCategoryORSubCategory = asyncHandler(async (req, res) => {
+//   try {
+//     const { categoryId, subcategoryId, page, limit } = req.params;
+//     let products = [];
+//     let productsPerPage = 0;
+//     if (limit === "" || limit === undefined) {
+//       productsPerPage = 100;
+//     }
+//     let startIndex = 0;
+//     if (page && page > 0) {
+//       startIndex = (page) * productsPerPage;
+//     }
+
+//     if (categoryId) {
+//       products = await Product
+//       .find({
+//         categoryId,
+//       })
+//       .skip(startIndex)
+//       .limit(productsPerPage)
+//       .forEach((product) => {
+//         products.push(product)
+        
+//     }).then(()=> {
+//       res.status(200).json(products);
+//     });
+//     } 
+    
+//     else if (subcategoryId) {
+//       products = await Product.find({
+//         subcategoryId,
+//       }).skip(startIndex)
+//       .limit(productsPerPage)
+//       .forEach((product) => {
+//         products.push(product)
+//         ;
+//     }).then(()=> {
+//       res.status(200).json(products);
+//     });
+//     }
+    
+//   } catch (error) {
+//     console.error("Error fetching products by category or subcategory:", error.message);
+//     res.status(500).json({ error: "Failed to fetch products" });
+//   }
+// });
+
 // Get product by ID
+const getProductsByCategoryORSubCategory = asyncHandler(async (req, res) => {
+  try {
+    const { categoryId, subcategoryId, page, limit } = req.params;
+    console.log({
+      categoryId,
+      subcategoryId,
+      page,
+      limit,
+    })
+    let productsPerPage = limit ? parseInt(limit) : 100;
+    let startIndex = page && page > 0 ? (page - 1) * productsPerPage : 0;
+
+    let query = {};
+
+    if (categoryId && categoryId !== ':categoryId') {
+      query.categoryId = categoryId;
+    } else if (subcategoryId && subcategoryId !== ':subcategoryId') {
+      query.subcategoryId = subcategoryId;
+    }
+
+    const products = await Product.find(query).sort({ createdAt: -1 })
+      .skip(startIndex)
+      .limit(productsPerPage)
+      .exec();
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching products by category or subcategory:", error.message);
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
+});
+
+
 const getProductById = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (!product) {
@@ -364,4 +444,5 @@ module.exports = {
   decreaseQuantity,
   decreaseQuantityFromQueue,
   updateProductRating,
+  getProductsByCategoryORSubCategory
 };

@@ -12,7 +12,7 @@ const MainLayout = () => {
     style={{minHeight: "100vh"}}
     // style={{maxHeight: `calc(100vh - 36px)`, overflow:"auto"}}
     //  className='h-'
-    className='px-9'
+    className='lg:px-9'
      >
 
     <Outlet />

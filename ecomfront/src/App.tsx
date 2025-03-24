@@ -8,9 +8,11 @@ import Test from './pages/Test';
 import DashboardLayout from '@/layout/DashboardLayout';
 import Dashboard from '@/admin/Dashboard'
 import Product from '@/admin/Product'
-import Category from '@/admin/Category'
+import CategoryAdmin from '@/admin/Category'
 import Shop from './pages/Shop';
 import Order from './pages/Order';
+import Contact from './pages/Contact';
+import Category from './pages/Category';
 
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -33,7 +35,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
           <Route path='/shop' element={<Shop />} />
+          <Route path='/category/:id/:name' element={<Category />} />
           <Route path="/product/:id" element={<SingleProduct />} />
+          <Route path="/contact" element={<Contact />} />
+
+          
           <Route path="/cart" element={<Cart />} />
           <Route path='/checkout' element={<Checkout />} />
           <Route path='/order' element={<Order/>} />
@@ -45,7 +51,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="product" element={<Product />} />
-            <Route path="category" element={<Category />} />
+            <Route path="category" element={<CategoryAdmin />} />
             {/* <Route path="products" element={<Products />} />
             <Route path="orders" element={<Orders />} /> */}
           </Route>

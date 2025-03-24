@@ -27,6 +27,7 @@ const createCategory = asyncHandler(async (req, res) => {
 const updateCategory = asyncHandler(async (req, res) => {
   const { name, description, image, subCategories } = req.body;
 
+  // Find the category by ID
   const category = await Category.findById(req.params.id);
   if (!category) {
     res.status(404);
@@ -36,12 +37,47 @@ const updateCategory = asyncHandler(async (req, res) => {
   // Update category fields
   category.name = name || category.name;
   category.description = description || category.description;
-  category.image = image || category.image; // Update category image URL
-  category.subCategories = subCategories || category.subCategories; // Update sub-categories, which may also include image URLs
+  category.image = image || category.image;
 
-  await category.save();
-  res.status(200).json(category);
+  // Replace or partially update subcategories
+  // Currently replaces all subcategories with the new array
+  category.subCategories = subCategories || category.subCategories;
+
+  try {
+    const updatedCategory = await category.save();
+    res.status(200).json({
+      message: 'Category updated successfully',
+      category: updatedCategory
+    });
+  } catch (error) {
+    res.status(400);
+    throw new Error(`Failed to update category: ${error.message}`);
+  }
 });
+// // Update category with image and sub-categories
+// const updateCategory = asyncHandler(async (req, res) => {
+//   console.log("////////////////")
+//   console.log("////////////////")
+//   console.log(req.body)
+//   console.log("////////////////")
+//   console.log("////////////////")
+//   const { name, description, image, subCategories } = req.body;
+
+//   const category = await Category.findById(req.params.id);
+//   if (!category) {
+//     res.status(404);
+//     throw new Error('Category not found');
+//   }
+
+//   // Update category fields
+//   category.name = name || category.name;
+//   category.description = description || category.description;
+//   category.image = image || category.image; // Update category image URL
+//   category.subCategories = subCategories || category.subCategories; // Update sub-categories, which may also include image URLs
+
+//   await category.save();
+//   res.status(200).json(category);
+// });
 
 // Get all categories
 const getAllCategories = asyncHandler(async (req, res) => {
